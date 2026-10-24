@@ -1,123 +1,276 @@
-# 🌐 INDIA TRADE INTELLIGENCE
-### Research-Grade Economics & International Trade Data Platform
+# ⚔️ LEVEL UP — Gamified RPG Habit Tracker
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
-[![Streamlit Dashboard](https://img.shields.io/badge/streamlit-1.40+-FF4B4B.svg)](https://streamlit.io/)
-[![Validation](https://img.shields.io/badge/pipeline-validated-emerald.svg)]()
-[![Tests](https://img.shields.io/badge/pytest-passed-success.svg)]()
-[![Data Sources](https://img.shields.io/badge/sources-WorldBank%20%7C%20DGCI%26S%20%7C%20RBI-darkblue.svg)]()
+[![Android](https://img.shields.io/badge/Platform-Android%208.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/nomadlover/level-up-habit-tracker/raw/main/release/app-debug.apk)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Capacitor](https://img.shields.io/badge/Capacitor-8.5-blue?style=for-the-badge&logo=capacitor&logoColor=white)](https://capacitorjs.com/)
+[![Firebase](https://img.shields.io/badge/Firebase-Auth%20%26%20Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
----
-
-> 🏛️ **DATA PROVENANCE & TEMPORAL AUDIT NOTICE (October 2026):**  
-> This platform has been independently audited for economic data provenance, accounting identities, and temporal accuracy.  
-> - **Latest Complete Annual Data:** Calendar Year 2024 (World Bank WDI) and Financial Year 2023-24 (DGCI&S).  
-> - **Provisional Horizon:** FY 2024-25 Quarter 1 (April–July) momentum annualized/interim as reported in preliminary releases.  
-> - **Strict Temporal Grounding:** Historical benchmark data (e.g. 2024) is strictly labeled with its explicit year and is never mischaracterized as "Today" or "Live".
+> **Gamify your discipline.** Turn your daily habits and goals into high-stakes RPG quests. Slay procrastination, level up your hunter class, maintain streaks, and dominate the Global Arena Leaderboard.
 
 ---
 
-## 🎯 Executive Overview & Research Goal
+## 📲 Download Release APK
 
-**INDIA TRADE INTELLIGENCE** is a research-grade economics application designed to analyze, model, and interpret India's foreign trade dynamics through verified public datasets.
+| Artifact | Version | Size | Direct Download |
+|:---|:---:|:---:|:---:|
+| **LEVEL UP Android App** | `v1.0.0 (Release)` | `~8.5 MB` | [📥 **Download app-debug.apk**](https://github.com/nomadlover/level-up-habit-tracker/raw/main/release/app-debug.apk) |
 
-Rather than acting as a generic economics dashboard, this application enforces:
-- **Strict Empirical Data Engineering**: Multi-tier pipeline maintaining strict separation between raw and processed data.
-- **Accurate & Real Story of the Indian Economy**: Grounded economic studies evaluating the Post-2020 export breakout, the Russian crude pivot, the Mobile PLI surge, and the services cushion.
-- **Inflation & Real Purchasing Power**: Interactive simulator revealing the erosion in the real value of the Rupee and physical commodity purchasing power over 30 years (1995–2024).
-- **Econometric Rigor**: OLS secular trend decomposition, Herfindahl-Hirschman (HHI) concentration indices, rolling volatility smoothing, and pre/post-COVID structural mean comparisons.
-- **Epistemic AI Research Layer**: Outcomes partitioned into **FACT**, **CALCULATION**, **INTERPRETATION**, and **HYPOTHESIS**, with mathematical verification to eliminate numerical hallucinations.
-- **Methodological Guardrails**: Explicit warnings preventing correlation-causation fallacies.
-- **High-Contrast Dark Theme**: All interactive Plotly figures rendered in high-contrast dark styling with vivid text and map contrast.
+### Quick Installation:
+1. Download [`release/app-debug.apk`](release/app-debug.apk) directly to your Android device.
+2. Tap the downloaded file to install (allow *"Install unknown apps"* if prompted).
+3. Sign in with Google or Email/Password, awaken your Hunter, and embark on your quests!
 
 ---
 
-## 🧭 Curated Empirical Research Inquiries Answered
+## 🏗️ System Architecture
 
-| Curated Inquiry | Empirical Methodology | Real Economic Finding |
-|---|---|---|
-| **1. Post-2020 Export Breakout** | OLS secular trend, 10-Yr CAGR, Pre/Post-COVID break | Total exports crossed **$829.8B** (CY 2024), driven by high-value refined petroleum, smartphones, and pharmaceuticals (+53.2% post-COVID jump). |
-| **2. Russian Oil Re-routing** | Bilateral shift, crude price discount tracking | Russia surged from under $4B pre-2022 to **$61.4B** in FY24, displacing traditional Gulf suppliers and boosting domestic refining crack spreads. |
-| **3. Mobile & Electronics PLI** | Sectoral inflection curves, CAGR | Electronics exports jumped from $7.6B (FY18) to **$29.1B** (FY24) under the PLI scheme, though gross component imports remain high ($89.8B). |
-| **4. Goods Deficit vs Services Surplus** | Net coverage ratio, BoP Current Account metrics | Persistent merchandise deficit (~$238B) is counterbalanced by software and professional services surpluses ($170B+), keeping net goods & services deficit at -$65.2B (~1.8% of GDP) and avoiding a BoP crisis. |
-| **5. Currency Depreciation Paradox** | Pearson correlation, real vs nominal exchange rates | INR/USD depreciation from ₹32 (1995) to ₹84+ (2025) does not eliminate deficit because crude and components are price-inelastic. |
-| **6. China Intermediate Dependence** | Bilateral coverage ratio, input decomposition | Deficit with China exceeds -$85B, concentrated in essential manufacturing inputs (APIs, solar cells, display panels) rather than consumer toys. |
-| **7. Provisional FY 2024-25 Q1 Trajectory** | High-frequency monthly tracking, freight indices | Quarter 1 (April–July) data tracks exports toward ~$880B annualized despite Red Sea container route friction. |
-| **8. Purchasing Power Erosion & Terms of Trade** | CPI index compounding, Rule of 70, real basket | The Rupee's domestic purchasing power halves every ~12.0 years at ~5.82% mean inflation; ₹1,000 from 2000 retains ~₹235 of goods purchasing capacity in 2024 benchmark terms. |
+The application is built on a hybrid architecture combining a high-performance **Next.js 16** responsive client inside an **Android Capacitor 8** native runtime container, backed by **Google Cloud Firestore** and **Firebase Authentication**.
+
+```mermaid
+graph TD
+    subgraph Client ["📱 Android Mobile App (Capacitor Container)"]
+        UI["Tailwind CSS Dark Gaming UI (app/page.tsx)"]
+        Audio["Web Audio Synthesizer (audio.ts)"]
+        Haptics["Tactile Haptics Bridge (@capacitor/haptics)"]
+        Notif["Local Notifications (@capacitor/local-notifications)"]
+        Cache["Local Storage Dual-Layer Cache (0ms Hydration)"]
+    end
+
+    subgraph NativeBridge ["🔌 Capacitor Native Plugins"]
+        Bridge["Capacitor Android Bridge (MainActivity.java)"]
+        AuthBridge["@capacitor-firebase/authentication"]
+        StatusBar["@capacitor/status-bar"]
+    end
+
+    subgraph Cloud ["☁️ Google Cloud & Firebase Backend"]
+        FBAuth["Firebase Authentication (Google OAuth + Email)"]
+        Firestore["Cloud Firestore (asia-south1)"]
+        UsersCol["/users/{uid} (Profiles, XP, Stats)"]
+        HabitsSub["/users/{uid}/habits/{habitId}"]
+        Arena["Global Arena Feed (Real-Time Leaderboard)"]
+    end
+
+    UI --> Audio
+    UI --> Haptics
+    UI --> Cache
+    UI <--> Bridge
+    Bridge <--> AuthBridge
+    AuthBridge <--> FBAuth
+    UI <--> Firestore
+    Firestore --> UsersCol
+    Firestore --> HabitsSub
+    Firestore --> Arena
+    Notif -->|9:00 PM Daily Reminder| Client
+```
 
 ---
 
-## 🛒 Inflation & Purchasing Power (Value of Your Money)
+## 🔄 User Authentication & Character Awakening Flow
 
-The platform features an interactive real-economy simulator answering: **"What is the real value of your money?"**
-
-- **Cumulative CPI Compounding**: Derives India's price index with compounding annual inflation rates from 1995 to 2024 (30 annual observations).
-- **Purchasing Power Retention**: Shows how much purchasing capacity remains from ₹100, ₹1,000, or ₹10,000 across decades.
-- **Headline CPI vs Retail Price Benchmarks**:
-  - *Headline CPI (MoSPI)*: Weighted representative basket of 299 goods and services.
-  - *Representative Commodity Benchmarks (Documented Historical Retail Proxies)*:
-    - 🌾 **Rice (Staple Food)**: ₹9.5/kg (1995) vs ₹60/kg (2024 benchmark) / ₹64/kg (2025 benchmark)
-    - ⛽ **Petrol (Transport Energy)**: ₹18.0/L (1995) vs ₹97/L (2024 benchmark) / ₹98/L (2025 benchmark)
-    - 🔥 **LPG Cylinder (14.2kg)**: ₹135 (1995) vs ₹850 (2024 benchmark) / ₹870 (2025 benchmark)
-    - 🍲 **Wholesome Meal / Thali**: ₹10 (1995) vs ₹125 (2024 benchmark) / ₹135 (2025 benchmark)
-    - 🎟️ **Cinema Ticket**: ₹15 (1995) vs ₹320 (2024 benchmark) / ₹350 (2025 benchmark)
-    - 🪙 **24K Gold**: ₹468/g (1995) vs ₹7,200/g (2024 benchmark) / ₹7,800/g (2025 benchmark)
-
-### Advanced Econometric Formulations:
-1. **Purchasing Power Parity (PPP) & Real Exchange Rate:**
-   $$RER = e \times \frac{P^*}{P}$$
-2. **Real Terms of Trade (Real ToT):**
-   $$ToT_{\text{real}} = \frac{P_x / P_{x,\text{base}}}{P_m / P_{m,\text{base}}} \times 100$$
-3. **Rule of 70 for Approximate Currency Purchasing Power Halving:**
-   $$T_{\text{half}} \approx \frac{70}{\bar{\pi}}$$
-4. **Real Trade Valuation Deflator:**
-   $$V_{\text{real}} = \frac{V_{\text{nominal}}}{\text{CPI} / 100}$$
-
----
-
-## 📊 Data Pipeline Architecture
+New and returning operatives undergo a zero-friction onboarding flow with automatic session healing, fail-safe watchdogs, and immediate screen transitions:
 
 ```mermaid
 flowchart TD
-    A["Raw Public Data Ingestion<br/>(World Bank REST API, DGCI&S, RBI)"] --> B["Strict Validation Suite<br/>(Accounting Identities, Schema, Ranges)"]
-    B --> C["Data Cleaning & Standardization<br/>(Currencies: USD B / $M / INR Cr, ISO-3 Codes)"]
-    C --> D["Analytical Transformations<br/>(CAGR, HHI, YoY %, CPI Index, 12M Rolling Trends)"]
-    D --> E["Relational Persistence<br/>(Indexed SQLite Database & Processed CSVs)"]
-    E --> F["Interactive High-Contrast Dashboard<br/>(Streamlit + Dark Plotly Visualizations)"]
-    E --> G["AI-Powered Research Outcomes<br/>(FACT, CALCULATION, INTERPRETATION, HYPOTHESIS)"]
+    Start([App Launched]) --> Hydrate[0ms Local Storage Hydration]
+    Hydrate --> CheckAuth{Firebase Auth State}
+
+    CheckAuth -->|Logged In| SessionValid{Session Active?}
+    SessionValid -->|Valid| HasProfile{Hunter Profile Exists?}
+    SessionValid -->|Deleted in Console| Purge[Auto-Purge Zombie Session] --> ShowAuth[Display Awakening Screen]
+
+    HasProfile -->|Yes| MainDashboard[Enter Quests Dashboard]
+    HasProfile -->|No| SetupScreen[Display Character Setup Screen]
+
+    CheckAuth -->|Signed Out| ShowAuth
+
+    ShowAuth -->|Google / Email Auth| Authenticate[Authenticate Credentials]
+    Authenticate -->|Success| ImmediateTransition[Instant 0ms Screen Advancement]
+    ImmediateTransition --> HasProfile
+    Authenticate -->|Guest Bypass| SetupScreen
+
+    SetupScreen --> PickHunter[Choose Name & Class: Warrior, Ranger, Mage, Paladin]
+    PickHunter --> SaveProfile[Atomic Write to Firestore users/uid]
+    SaveProfile --> MainDashboard
 ```
 
 ---
 
-## 🏛️ Official Data Sources & Provenance Registry
+## ⚡ Dual-Layer Persistence & Real-Time Sync Lifecycle
 
-| Metric Identifier | Official Source | Observation Horizon | Frequency | Measurement Unit | Accounting Definition | Data Status |
-|---|---|---|---|---|---|---|
-| `macro_exports_gnfs` | World Bank WDI (`NE.EXP.GNFS.CD`) | 1995–2024 | Calendar Year | Current US$ Billion | Goods and market services credits | Official Final |
-| `macro_imports_gnfs` | World Bank WDI (`NE.IMP.GNFS.CD`) | 1995–2024 | Calendar Year | Current US$ Billion | Goods and market services debits | Official Final |
-| `macro_trade_balance` | Derived Accounting Identity | 1995–2024 | Calendar Year | Current US$ Billion | Balance = Exports - Imports | Derived Identity |
-| `macro_trade_openness` | Derived Econometric Ratio | 1995–2024 | Calendar Year | % of GDP | ((Exports + Imports) / GDP) * 100 | Derived Metric |
-| `macro_cpi_inflation` | World Bank WDI (`FP.CPI.TOTL.ZG`) / MoSPI | 1995–2024 (30 obs) | Calendar Year | Annual % Change | Headline consumer price change | Official Final |
-| `bilateral_merchandise_trade` | DGCI&S, Ministry of Commerce | FY14–FY24 (Final) / FY25 Q1 (Prov) | Financial Year | US$ Million / INR Cr | Customs physical merchandise | Official Final / Prov |
-| `commodity_merchandise_trade` | DGCI&S, Ministry of Commerce | FY14–FY24 (Final) / FY25 Q1 (Prov) | Financial Year | US$ Million / INR Cr | 17 Principal sectors (ITC-HS) | Official Final / Prov |
-| `monthly_merchandise_trade` | Reserve Bank of India (DBIE) | 2018–2025 | Monthly | US$ Million | Monthly customs merchandise | Official Monthly |
-| `commodity_basket_benchmark` | Documented Retail Market Proxies | 1995–2025 Milestones | Quinquennial | INR per unit | Representative physical basket | Benchmark Proxy |
+Every quest action triggers an **instant local update** (0ms latency with audio/haptic feedback) followed by a **background Cloud Firestore synchronization**:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Hunter as ⚔️ Hunter
+    participant App as 📱 Level Up Client
+    participant Local as 💾 LocalStorage & Cache
+    participant Cloud as ☁️ Cloud Firestore
+
+    Hunter->>App: Tap Habit Complete (Checkbox)
+    App->>App: Trigger Haptic Feedback + Audio SFX + Confetti
+    App->>Local: Write updated XP, Level, Gold & Habits (0ms)
+    App->>Hunter: Immediate UI Update (+30 XP Particle)
+
+    Note over App,Cloud: Non-blocking Background Sync
+    App->>Cloud: setDoc(users/uid, { total_xp, daily_xp, gold })
+    App->>Cloud: setDoc(users/uid/habits/id, { completed_dates })
+    Cloud-->>App: Firestore Ack
+    Cloud->>Cloud: Trigger Leaderboard onSnapshot Update
+```
 
 ---
 
-## 🚀 Quickstart & Reproducibility Guide
+## 🕛 Automatic 12:00 AM Midnight Reset & Arena Ranking
 
-```powershell
-# 1. Navigate to workspace
-cd "india_trade_intelligence"
+The Daily Arena dynamically tracks high-performing hunters without burning database quotas:
 
-# 2. Run the Data Pipeline
-python run_pipeline.py
-
-# 3. Run all Tests (including Data Audit Suite)
-python -m pytest tests -v
-
-# 4. Launch the Dashboard
-streamlit run app.py
+```mermaid
+flowchart LR
+    A[Date Verification] -->|getTodayKey YYYY-MM-DD| B{Is Date == todayKey?}
+    B -->|Yes| C[Accumulate daily_xp]
+    B -->|New Day 12:00 AM| D[Reset daily_xp to 0]
+    D --> E[Preserve cumulative total_xp]
+    D --> F[Verify & Protect Streak Days]
+    C --> G[Stream into Today's Daily Leaderboard]
+    E --> H[Stream into All-Time Arena Rank]
 ```
-Open [http://localhost:8501](http://localhost:8501) in your browser.
+
+---
+
+## 🎮 Game Mechanics & RPG Progression
+
+### 1. Hunter Classes & Archetypes
+Operatives select their identity upon awakening:
+* **⚔️ Warrior / Paladin**: Frontline discipline, armor against procrastination.
+* **🏹 Ranger / Archer**: Swift, consistent daily task executions.
+* **🪄 Mage / Sorcerer**: Deep-work mastery, knowledge and study spells.
+* **🛡️ Guardian**: Defensive consistency, bulletproof streak shields.
+
+### 2. Level Progression Formula
+Player level escalates exponentially with total earned XP:
+$$\text{XP Required for Level } n = \text{round}\left(100 \times 1.25^{n - 1}\right)$$
+
+### 3. Quest Difficulty Rewards
+| Quest Difficulty | XP Reward | Gold Reward | Use Case |
+|:---|:---:|:---:|:---|
+| **🟢 Easy** | `+15 XP` | `🪙 5 Gold` | Quick wins (Drink water, make bed) |
+| **🟡 Medium** | `+30 XP` | `🪙 10 Gold` | Standard habits (30m workout, read 10 pages) |
+| **🟠 Hard** | `+60 XP` | `🪙 20 Gold` | High effort (2h deep study, coding project) |
+| **🔴 Epic** | `+120 XP` | `🪙 40 Gold` | Breakthrough milestones (Exam completion, major launch) |
+
+### 4. Streak Protection & Daily Reminders
+* **Daily Streak**: Increments automatically when at least 1 quest is completed today and yesterday was maintained.
+* **9:00 PM Protection**: Scheduled native notification triggers at 21:00 local time if quests remain unfinished before midnight.
+
+### 5. Loot Shop & Treasury
+Spend earned gold on custom and default rewards:
+* Cheat meal / specialty coffee
+* Movie or anime binge night
+* Power nap or custom gaming sessions
+
+---
+
+## 📂 Repository Structure
+
+```
+level-up-habit-tracker/
+├── android/                        # Capacitor Android native project
+│   ├── app/
+│   │   ├── google-services.json    # Firebase Android configuration
+│   │   └── src/main/AndroidManifest.xml
+│   └── build.gradle                # Android Gradle build scripts
+├── app/                            # Next.js 16 source code
+│   ├── constants/                  # App links, versioning, links.ts
+│   ├── utils/
+│   │   ├── audio.ts                # Synthesized Web Audio sound effects
+│   │   ├── firebase.ts             # Firebase Auth & Firestore client setup
+│   │   └── native.ts               # Capacitor Haptics & Notification bridges
+│   ├── globals.css                 # Custom gaming dark theme
+│   ├── layout.tsx                  # Root metadata & fonts
+│   └── page.tsx                    # Main single-page application & Arena UI
+├── release/                        # Compiled distribution binaries
+│   └── app-debug.apk               # Ready-to-install Android APK (~8.5 MB)
+├── capacitor.config.json           # Native bridge configuration
+├── firebase.json                   # Firebase Auth & Firestore rules configuration
+├── firestore.indexes.json          # Database query indexes
+├── firestore.rules                 # Strict security rules (public read, owner write)
+├── package.json                    # Dependencies and scripts
+└── tsconfig.json                   # TypeScript configuration
+```
+
+---
+
+## 🛡️ Cloud Firestore Security Rules
+
+Cloud Firestore is protected by declarative security rules allowing public read access for the Global Arena Leaderboard while strictly restricting all document writes to authenticated owners:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Allow read so the Global Leaderboard works seamlessly across all auth states
+      allow read: if true;
+      // Strictly restrict write operations to the authenticated document owner
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Habits and custom rewards subcollections
+      match /{allSubcollections=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
+```
+
+---
+
+## 💻 Local Development & Build Setup
+
+### Prerequisites
+* **Node.js**: v18.0 or higher
+* **Java SDK**: OpenJDK 17 or 21
+* **Android Studio / SDK**: Android SDK Platform 34+
+
+### 1. Clone & Install Dependencies
+```bash
+git clone https://github.com/nomadlover/level-up-habit-tracker.git
+cd level-up-habit-tracker
+npm install
+```
+
+### 2. Run Local Web Development Server
+```bash
+npm run dev
+# Open http://localhost:3000
+```
+
+### 3. Build & Sync Native Android Assets
+```bash
+# 1. Compile Next.js static build
+npm run build
+
+# 2. Sync web assets into Android Capacitor container
+npx cap sync android
+```
+
+### 4. Compile Android APK
+```bash
+# Windows
+cd android
+.\gradlew.bat assembleDebug
+
+# macOS / Linux
+cd android
+./gradlew assembleDebug
+```
+The output APK is generated at:
+`android/app/build/outputs/apk/debug/app-debug.apk`
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License**. Feel free to use, modify, and distribute.

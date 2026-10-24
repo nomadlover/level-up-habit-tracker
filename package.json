@@ -1,6 +1,6 @@
 {
-  "name": "neighborscope",
-  "version": "0.1.0",
+  "name": "level-up-habit-tracker",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -37,5 +37,6 @@
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "Level Up - Gamified RPG Habit Tracker Android Application built with Next.js, Capacitor, and Cloud Firestore"
 }

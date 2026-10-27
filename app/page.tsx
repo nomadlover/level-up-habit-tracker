@@ -42,7 +42,18 @@ import {
   playLevelUpSound
 } from './utils/audio';
 import { initNativeApp, triggerHaptic, scheduleStreakProtectionReminder, isNativePlatform } from './utils/native';
-import { TopBar, BottomNav, Button, Card, Badge, ProgressBar, Modal, EmptyState } from '@/components/ui';
+import {
+  AppShell,
+  Button,
+  Card,
+  Badge,
+  ProgressBar,
+  Modal,
+  EmptyState,
+  QuestCard,
+  RewardValue,
+  DifficultyBadge
+} from '@/components/ui';
 import {
   PRIVACY_POLICY_URL,
   TERMS_OF_SERVICE_URL,
@@ -346,6 +357,15 @@ export default function LevelUpApp() {
   const todayKey = useMemo(() => getTodayKey(), []);
   const yesterdayKey = useMemo(() => getYesterdayKey(), []);
 
+  const todayFormatted = useMemo(() => {
+    const d = new Date();
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    }).toUpperCase();
+  }, []);
+
   const weekDays = useMemo(() => {
     const baseDate = addDays(new Date(), weekOffset * 7);
     const startOfWeek = getStartOfWeek(baseDate);
@@ -366,10 +386,27 @@ export default function LevelUpApp() {
     return habits.reduce((acc, h) => acc + h.completedDates.length, 0);
   }, [habits]);
 
+  const completedTodayCount = useMemo(() => {
+    return habits.filter((h) => h.completedDates.includes(todayKey)).length;
+  }, [habits, todayKey]);
+
+  const activeQuests = useMemo(() => {
+    return habits.filter((h) => !h.completedDates.includes(todayKey));
+  }, [habits, todayKey]);
+
+  const completedQuests = useMemo(() => {
+    return habits.filter((h) => h.completedDates.includes(todayKey));
+  }, [habits, todayKey]);
+
+  const todayXP = useMemo(() => {
+    return player.dailyXPDate === todayKey ? (player.dailyXP || 0) : 0;
+  }, [player.dailyXPDate, player.dailyXP, todayKey]);
+
+  const completionRate = useMemo(() => {
+    return habits.length > 0 ? Math.round((completedTodayCount / habits.length) * 100) : 0;
+  }, [habits.length, completedTodayCount]);
+
   const xpNeeded = useMemo(() => xpForLevel(player.level), [player.level]);
-  const xpPercentage = useMemo(() => {
-    return Math.min(100, Math.round((player.currentXP / xpNeeded) * 100));
-  }, [player.currentXP, xpNeeded]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -386,7 +423,7 @@ export default function LevelUpApp() {
     setParticles((prev) => [...prev, { id, text, x: posX, y: posY, color }]);
     setTimeout(() => {
       setParticles((prev) => prev.filter((p) => p.id !== id));
-    }, 1100);
+    }, 850);
   };
 
   // ----------------------------------------------------
@@ -1373,7 +1410,7 @@ export default function LevelUpApp() {
       playQuestCompleteSound(!soundEnabled);
       const posX = e?.clientX;
       const posY = e?.clientY;
-      spawnParticle(`+${targetHabit.xpReward} XP!`, '#3B82F6', posX, posY);
+      spawnParticle(`+${targetHabit.xpReward} XP`, '#38BDF8', posX, posY);
 
       // Streak calculation
       let newStreak = player.streakDays;
@@ -2069,302 +2106,376 @@ export default function LevelUpApp() {
   // RENDER: 4. Main App (Quests, Leaderboard, Shop, Profile)
   // ----------------------------------------------------
   return (
-    <div className="min-h-screen bg-[#080A0F] text-slate-100 flex flex-col items-center justify-start relative selection:bg-[#F5B041]/30 selection:text-[#F5B041]">
-      {/* Floating XP / Gold Particles */}
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="fixed pointer-events-none z-50 text-sm font-black tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-float-xp font-stat"
-          style={{ left: `${p.x - 25}px`, top: `${p.y - 20}px`, color: p.color }}
-        >
-          {p.text}
-        </div>
-      ))}
+    <>
+      <AppShell
+        playerName={player.name}
+        avatarIcon={player.avatar}
+        classTitle={player.classTitle}
+        level={player.level}
+        currentXP={player.currentXP}
+        requiredXP={xpNeeded}
+        gold={player.gold}
+        streakDays={player.streakDays}
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+        }}
+        onOpenSettings={() => {
+          triggerHaptic('light');
+          setIsSettingsModal(true);
+        }}
+        floatingSlot={
+          <>
+            {/* Floating XP / Gold Particles */}
+            {particles.map((p) => (
+              <div
+                key={p.id}
+                className="fixed pointer-events-none z-50 text-sm font-black tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-float-xp font-stat"
+                style={{ left: `${p.x - 25}px`, top: `${p.y - 20}px`, color: p.color }}
+              >
+                {p.text}
+              </div>
+            ))}
 
-      {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#0E121B]/95 border border-white/10 text-slate-100 px-4 py-2 rounded-full shadow-2xl backdrop-blur-md animate-level-burst text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5 text-[#F5B041] shrink-0" />
-          <span className="break-words">{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Smartphone Container Viewport */}
-      <div className="w-full max-w-md min-h-screen bg-[#080A0F] flex flex-col relative pb-20">
+            {/* Floating Toast Notification */}
+            {toastMessage && (
+              <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#0E121B]/95 border border-white/10 text-slate-100 px-4 py-2 rounded-full shadow-2xl backdrop-blur-md animate-level-burst text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-[#F5B041] shrink-0" />
+                <span className="break-words">{toastMessage}</span>
+              </div>
+            )}
+          </>
+        }
+      >
         {/* ======================================================== */}
-        {/* PERSISTENT TOP STATUS HUD (Active Across All Tabs)       */}
+        {/* TAB 1: QUESTS (HOME)                                     */}
         {/* ======================================================== */}
-        <TopBar
-          playerName={player.name}
-          avatarIcon={player.avatar}
-          classTitle={player.classTitle}
-          level={player.level}
-          currentXP={player.currentXP}
-          gold={player.gold}
-          streakDays={player.streakDays}
-          onOpenSettings={() => {
-            triggerHaptic('light');
-            setIsSettingsModal(true);
-          }}
-        />
-
-        {/* ======================================================== */}
-        {/* MAIN CONTENT AREA                                        */}
-        {/* ======================================================== */}
-        <main className="flex-1 px-4 py-3 space-y-3.5">
-          {/* -------------------------------------------------------- */}
-          {/* TAB 1: QUESTS (HOME)                                     */}
-          {/* -------------------------------------------------------- */}
-          {activeTab === 'quests' && (
-            <div className="space-y-3.5">
-              {/* Minimalist Horizontal 7-Day Calendar Strip */}
-              <Card variant="base" padding="sm" className="space-y-2">
-                <div className="flex items-center justify-between px-1">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
-                    <Calendar className="w-3.5 h-3.5 text-[#F5B041]" />
-                    <span className="font-stat">
-                      {weekDays[0].monthShort} {weekDays[0].dayNumber} – {weekDays[6].dayNumber}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setWeekOffset((o) => o - 1)}
-                      className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
-                    {weekOffset !== 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setWeekOffset(0)}
-                        className="text-[10px] px-2 py-0.5 rounded bg-[#F5B041]/10 text-[#F5B041] border border-[#F5B041]/20 font-bold"
-                      >
-                        Today
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setWeekOffset((o) => Math.min(0, o + 1))}
-                      disabled={weekOffset === 0}
-                      className={`p-1 rounded-lg transition ${
-                        weekOffset === 0 ? 'text-slate-700' : 'text-slate-400 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+        {activeTab === 'quests' && (
+          <div className="space-y-4">
+            {/* 1. SCREEN HEADER */}
+            <div className="flex items-center justify-between px-1">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span className="text-slate-300">TODAY</span>
+                  <span className="text-slate-600">•</span>
+                  <span>{todayFormatted}</span>
                 </div>
-
-                {/* Day Buttons */}
-                <div className="grid grid-cols-7 gap-1">
-                  {weekDays.map((day) => {
-                    const completedOnDay = habits.filter((h) => h.completedDates.includes(day.dateKey)).length;
-                    const isAllDone = completedOnDay === habits.length && habits.length > 0;
-
-                    return (
-                      <div
-                        key={day.dateKey}
-                        className={`flex flex-col items-center py-2 px-1 rounded-xl text-center transition ${
-                          day.isToday
-                            ? 'bg-[#F5B041]/10 border border-[#F5B041]/40 text-[#F5B041]'
-                            : 'bg-[#080A0F]/60 border border-white/[0.06] text-slate-400'
-                        }`}
-                      >
-                        <span className="text-[9px] uppercase font-bold tracking-wider">{day.dayShort}</span>
-                        <span className={`text-xs font-black font-stat mt-0.5 ${day.isToday ? 'text-[#F5B041]' : 'text-slate-200'}`}>
-                          {day.dayNumber}
-                        </span>
-                        <div className="mt-1 flex items-center justify-center">
-                          {isAllDone ? (
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm" />
-                          ) : completedOnDay > 0 ? (
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#F5B041]" />
-                          ) : (
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-800" />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-
-              {/* Slot Indicator & Quick Surge Action */}
-              <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                    Daily Quests
+                  <span className="text-xs font-black text-white font-stat tracking-tight">
+                    {completedTodayCount} / {habits.length} QUESTS COMPLETED
                   </span>
-                  <Badge variant="gold" size="sm" className="font-stat">
-                    {habits.length}/{MAX_FREE_HABITS} Slots
-                  </Badge>
+                  {habits.length > 0 && completedTodayCount === habits.length && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold font-stat">
+                      ALL DONE
+                    </span>
+                  )}
                 </div>
-
-                {habits.length > 0 && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon={<Zap className="w-3 h-3 text-[#F5B041]" />}
-                    onClick={handleMarkAllToday}
-                    title="Mark all habits completed for today"
-                  >
-                    Complete All
-                  </Button>
-                )}
               </div>
 
-              {/* Habit Checklist Cards directly following Calendar */}
-              <div className="space-y-2">
-                {habits.length === 0 ? (
-                  <div className="space-y-3">
-                    <EmptyState
-                      icon={<Sword className="w-6 h-6 text-[#F5B041]" />}
-                      title="Your Quest Book is Ready"
-                      description="Enlist daily habit quests to earn XP, maintain your streak, and level up your hunter rank."
-                      action={
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          icon={<Plus className="w-4 h-4" />}
-                          onClick={() => setIsAddQuestModal(true)}
-                        >
-                          Enlist Custom Quest
-                        </Button>
-                      }
-                    />
+              {habits.length > 0 && completedTodayCount < habits.length && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={<Zap className="w-3.5 h-3.5 text-[#F5B041]" />}
+                  onClick={handleMarkAllToday}
+                  title="Complete all remaining quests for today"
+                >
+                  Complete All
+                </Button>
+              )}
+            </div>
 
-                    {/* 1-Tap Quick-Add Starter Quests */}
-                    {STARTER_QUESTS.filter((sq) => !habits.some((h) => h.name.toLowerCase() === sq.name.toLowerCase())).length > 0 && (
-                      <Card variant="base" padding="sm" className="space-y-2">
-                        <div className="flex items-center justify-between px-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5B041] flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-[#F5B041]" />
-                            <span>Quick-Add Starter Quests</span>
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-semibold">1-Tap Enlist</span>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-1.5">
-                          {STARTER_QUESTS.filter((sq) => !habits.some((h) => h.name.toLowerCase() === sq.name.toLowerCase())).map((sq) => (
-                            <button
-                              key={sq.name}
-                              type="button"
-                              onClick={() => handleAddStarterQuest(sq)}
-                              className="p-2.5 rounded-xl bg-[#080A0F]/80 hover:bg-[#151A26] border border-white/[0.06] hover:border-[#F5B041]/40 text-left flex items-center justify-between gap-3 transition active:scale-[0.99] group"
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                <span className="text-xl shrink-0">{sq.icon}</span>
-                                <div className="min-w-0 flex-1">
-                                  <div className="text-xs font-bold text-slate-200 group-hover:text-white break-words leading-tight">
-                                    {sq.name}
-                                  </div>
-                                  <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                                    <Badge difficulty={sq.difficulty} size="sm">
-                                      {sq.difficulty}
-                                    </Badge>
-                                    <span>•</span>
-                                    <span className="text-[#3B82F6] font-semibold font-stat">+{sq.xpReward} XP</span>
-                                    <span>•</span>
-                                    <span className="text-[#F5B041] font-semibold font-stat">+{sq.goldReward}g</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="w-7 h-7 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-[#F5B041] shrink-0 group-hover:bg-[#F5B041] group-hover:text-[#080A0F] transition shadow-sm">
-                                <Plus className="w-4 h-4 stroke-[2.5]" />
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </Card>
-                    )}
+            {/* 2. DAILY PROGRESSION MODULE (TACTICAL BRIEFING) */}
+            <Card variant="base" padding="md" className="space-y-3 bg-[#0E121B] border-white/[0.08]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-[#F5B041]/10 border border-[#F5B041]/20 flex items-center justify-center text-[#F5B041]">
+                    <Zap className="w-3.5 h-3.5" />
                   </div>
-                ) : (
-                  habits.map((habit) => {
-                    const isDoneToday = habit.completedDates.includes(todayKey);
+                  <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                    Daily Briefing
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-xs font-bold text-[#F5B041] font-stat">
+                  <Sparkles className="w-3.5 h-3.5 text-[#F5B041]" />
+                  <span>+{todayXP.toLocaleString()} XP TODAY</span>
+                </div>
+              </div>
 
-                    return (
-                      <Card
-                        key={habit.id}
-                        variant={isDoneToday ? 'base' : 'interactive'}
-                        padding="none"
-                        className={`transition-all duration-200 ${
-                          isDoneToday
-                            ? 'bg-[#0E121B]/60 border-emerald-500/25'
-                            : 'border-white/[0.08]'
-                        }`}
-                      >
-                        <div className="p-3 flex items-center justify-between gap-3">
-                          {/* Checkbox Button */}
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <button
-                              type="button"
-                              onClick={(e) => handleToggleHabit(habit.id, todayKey, e)}
-                              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all active:scale-90 ${
-                                isDoneToday
-                                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                                  : 'bg-[#080A0F] border-white/10 text-slate-600 hover:border-slate-500'
-                              }`}
-                            >
-                              {isDoneToday ? (
-                                <Check className="w-5 h-5 stroke-[3] text-emerald-400 animate-level-burst" />
-                              ) : (
-                                <span className="text-lg">{habit.icon}</span>
-                              )}
-                            </button>
+              {/* Today's Momentum Bar */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-stat">
+                  <span className="text-slate-400 font-medium">Daily Objective Progress</span>
+                  <span className="text-slate-200 font-bold">{completionRate}%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-[#080A0F] border border-white/5 overflow-hidden p-[1px]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500 ease-out"
+                    style={{ width: `${completionRate}%` }}
+                  />
+                </div>
+              </div>
 
+              {/* Tactical Streak / Status Indicator */}
+              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-white/5 text-slate-400">
+                <div className="flex items-center gap-1.5">
+                  <Flame className={`w-3.5 h-3.5 ${completedTodayCount > 0 ? 'text-orange-400 fill-orange-400/30' : 'text-slate-600'}`} />
+                  <span>
+                    {completedTodayCount > 0
+                      ? `${player.streakDays}d streak secured for today`
+                      : `Complete 1 quest to secure ${player.streakDays}d streak`}
+                  </span>
+                </div>
+                <span className="font-stat text-slate-500">
+                  {activeQuests.length} Remaining
+                </span>
+              </div>
+            </Card>
+
+            {/* 3. MINIMALIST HORIZONTAL 7-DAY CALENDAR STRIP */}
+            <Card variant="base" padding="sm" className="space-y-2">
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                  <Calendar className="w-3.5 h-3.5 text-[#F5B041]" />
+                  <span className="font-stat">
+                    {weekDays[0].monthShort} {weekDays[0].dayNumber} – {weekDays[6].dayNumber}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setWeekOffset((o) => o - 1)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  {weekOffset !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setWeekOffset(0)}
+                      className="text-[10px] px-2 py-0.5 rounded bg-[#F5B041]/10 text-[#F5B041] border border-[#F5B041]/20 font-bold"
+                    >
+                      Today
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setWeekOffset((o) => Math.min(0, o + 1))}
+                    disabled={weekOffset === 0}
+                    className={`p-1 rounded-lg transition ${
+                      weekOffset === 0 ? 'text-slate-700' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Day Buttons */}
+              <div className="grid grid-cols-7 gap-1">
+                {weekDays.map((day) => {
+                  const completedOnDay = habits.filter((h) => h.completedDates.includes(day.dateKey)).length;
+                  const isAllDone = completedOnDay === habits.length && habits.length > 0;
+
+                  return (
+                    <div
+                      key={day.dateKey}
+                      className={`flex flex-col items-center py-2 px-1 rounded-xl text-center transition ${
+                        day.isToday
+                          ? 'bg-[#F5B041]/10 border border-[#F5B041]/40 text-[#F5B041]'
+                          : 'bg-[#080A0F]/60 border border-white/[0.06] text-slate-400'
+                      }`}
+                    >
+                      <span className="text-[9px] uppercase font-bold tracking-wider">{day.dayShort}</span>
+                      <span className={`text-xs font-black font-stat mt-0.5 ${day.isToday ? 'text-[#F5B041]' : 'text-slate-200'}`}>
+                        {day.dayNumber}
+                      </span>
+                      <div className="mt-1 flex items-center justify-center">
+                        {isAllDone ? (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm" />
+                        ) : completedOnDay > 0 ? (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#F5B041]" />
+                        ) : (
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-800" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {/* 4. QUEST LIST */}
+            {habits.length === 0 ? (
+              <div className="space-y-3">
+                <EmptyState
+                  icon={<Sword className="w-6 h-6 text-[#F5B041]" />}
+                  title="Your Quest Book is Ready"
+                  description="Enlist daily habit quests to earn XP, maintain your streak, and level up your hunter rank."
+                  action={
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={<Plus className="w-4 h-4" />}
+                      onClick={() => setIsAddQuestModal(true)}
+                    >
+                      Enlist Custom Quest
+                    </Button>
+                  }
+                />
+
+                {/* 1-Tap Quick-Add Starter Quests */}
+                {STARTER_QUESTS.filter((sq) => !habits.some((h) => h.name.toLowerCase() === sq.name.toLowerCase())).length > 0 && (
+                  <Card variant="base" padding="sm" className="space-y-2">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5B041] flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-[#F5B041]" />
+                        <span>Quick-Add Starter Quests</span>
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-semibold">1-Tap Enlist</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-1.5">
+                      {STARTER_QUESTS.filter((sq) => !habits.some((h) => h.name.toLowerCase() === sq.name.toLowerCase())).map((sq) => (
+                        <button
+                          key={sq.name}
+                          type="button"
+                          onClick={() => handleAddStarterQuest(sq)}
+                          className="p-2.5 rounded-xl bg-[#080A0F]/80 hover:bg-[#151A26] border border-white/[0.06] hover:border-[#F5B041]/40 text-left flex items-center justify-between gap-3 transition active:scale-[0.99] group"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <span className="text-xl shrink-0">{sq.icon}</span>
                             <div className="min-w-0 flex-1">
-                              <span
-                                className={`font-bold text-sm block break-words ${
-                                  isDoneToday ? 'line-through text-slate-500' : 'text-slate-100'
-                                }`}
-                              >
-                                {habit.name}
-                              </span>
-
-                              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <span className="text-[10px] font-bold text-[#3B82F6] flex items-center gap-0.5 font-stat">
-                                  <Sparkles className="w-2.5 h-2.5" /> +{habit.xpReward} XP
-                                </span>
-                                <span className="text-[10px] font-semibold text-[#F5B041] font-stat">
-                                  +{habit.goldReward}g
-                                </span>
-                                <Badge difficulty={habit.difficulty} size="sm">
-                                  {habit.difficulty}
-                                </Badge>
+                              <div className="text-xs font-bold text-slate-200 group-hover:text-white break-words leading-tight">
+                                {sq.name}
+                              </div>
+                              <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                <DifficultyBadge difficulty={sq.difficulty} size="sm" />
+                                <span>•</span>
+                                <RewardValue amount={sq.xpReward} type="xp" size="sm" />
+                                <span>•</span>
+                                <RewardValue amount={sq.goldReward} type="gold" size="sm" />
                               </div>
                             </div>
                           </div>
-
-                          <div className="flex items-center gap-1 shrink-0">
-                            {/* Edit Quest */}
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEditQuest(habit)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-[#F5B041] hover:bg-white/5 transition"
-                              title="Edit Quest"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </button>
-
-                            {/* Delete Quest */}
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteQuest(habit.id, habit.name)}
-                              className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition"
-                              title="Delete Quest"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                          <div className="w-7 h-7 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-[#F5B041] shrink-0 group-hover:bg-[#F5B041] group-hover:text-[#080A0F] transition shadow-sm">
+                            <Plus className="w-4 h-4 stroke-[2.5]" />
                           </div>
-                        </div>
-                      </Card>
-                    );
-                  })
+                        </button>
+                      ))}
+                    </div>
+                  </Card>
                 )}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="space-y-4">
+                {/* ACTIVE QUESTS SECTION */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>Active Missions</span>
+                      <span className="px-1.5 py-0.5 rounded bg-white/[0.06] text-slate-300 text-[10px] font-stat">
+                        {activeQuests.length}
+                      </span>
+                    </span>
+                  </div>
+
+                  {activeQuests.length > 0 ? (
+                    <div className="space-y-2">
+                      {activeQuests.map((habit) => (
+                        <QuestCard
+                          key={habit.id}
+                          id={habit.id}
+                          name={habit.name}
+                          icon={habit.icon}
+                          difficulty={habit.difficulty}
+                          xpReward={habit.xpReward}
+                          goldReward={habit.goldReward}
+                          isCompleted={false}
+                          onToggle={(e) => handleToggleHabit(habit.id, todayKey, e)}
+                          onEdit={() => handleOpenEditQuest(habit)}
+                          onDelete={() => handleDeleteQuest(habit.id, habit.name)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-1">
+                      <div className="w-8 h-8 mx-auto rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </div>
+                      <div className="text-xs font-black uppercase tracking-wider text-emerald-400">
+                        All Quests Completed For Today
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        Daily objectives cleared. Streak secured. Rest or prepare for tomorrow.
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* COMPLETED QUESTS SECTION */}
+                {completedQuests.length > 0 && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>Completed Today</span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-stat">
+                          {completedQuests.length}
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {completedQuests.map((habit) => (
+                        <QuestCard
+                          key={habit.id}
+                          id={habit.id}
+                          name={habit.name}
+                          icon={habit.icon}
+                          difficulty={habit.difficulty}
+                          xpReward={habit.xpReward}
+                          goldReward={habit.goldReward}
+                          isCompleted={true}
+                          onToggle={(e) => handleToggleHabit(habit.id, todayKey, e)}
+                          onEdit={() => handleOpenEditQuest(habit)}
+                          onDelete={() => handleDeleteQuest(habit.id, habit.name)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 5-SLOT FREE TIER STATUS */}
+                <div className="pt-1">
+                  <div className="p-3 rounded-xl bg-[#0E121B]/60 border border-white/[0.06] flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-400 font-medium">Capacity:</span>
+                      <span className="font-stat font-bold text-slate-200">
+                        {habits.length} / {MAX_FREE_HABITS} Slots Used
+                      </span>
+                    </div>
+                    {habits.length >= MAX_FREE_HABITS ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('profile');
+                        }}
+                        className="text-[11px] font-bold text-[#F5B041] hover:underline flex items-center gap-1"
+                      >
+                        <span>Unlock with Pro</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    ) : (
+                      <span className="text-[11px] text-emerald-400 font-semibold font-stat">
+                        {MAX_FREE_HABITS - habits.length} Slots Free
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
           {/* -------------------------------------------------------- */}
           {/* TAB 2: LIVE FIRESTORE REAL-TIME LEADERBOARD              */}
@@ -2891,34 +3002,22 @@ export default function LevelUpApp() {
               </div>
             </div>
           )}
-        </main>
-
-        {/* ======================================================== */}
-        {/* CLEAN FLOATING + BUTTON IN BOTTOM-RIGHT (Quests Only)    */}
-        {/* ======================================================== */}
-        {activeTab === 'quests' && (
+        {/* CLEAN FLOATING + BUTTON IN BOTTOM-RIGHT (Quests Only) */}
+        {activeTab === 'quests' && habits.length < MAX_FREE_HABITS && (
           <button
             type="button"
-            onClick={() => setIsAddQuestModal(true)}
-            className="fixed bottom-20 right-5 z-40 w-12 h-12 rounded-2xl bg-gradient-to-r from-[#F5B041] to-[#E59866] hover:brightness-105 text-[#080A0F] flex items-center justify-center shadow-xl shadow-[#F5B041]/25 active:scale-95 transition-all border border-[#F5B041]/50"
+            onClick={() => {
+              triggerHaptic('light');
+              setIsAddQuestModal(true);
+            }}
+            className="fixed bottom-20 right-5 md:right-[calc(50%-13rem)] z-40 w-12 h-12 rounded-2xl bg-gradient-to-r from-[#F5B041] to-[#E59866] hover:brightness-105 text-[#080A0F] flex items-center justify-center shadow-xl shadow-[#F5B041]/25 active:scale-95 transition-all border border-[#F5B041]/50"
             title="Add Habit Quest"
             aria-label="Add Habit Quest"
           >
             <Plus className="w-6 h-6 stroke-[3]" />
           </button>
         )}
-
-        {/* ======================================================== */}
-        {/* PERSISTENT MOBILE BOTTOM NAVIGATION                      */}
-        {/* ======================================================== */}
-        <BottomNav
-          activeTab={activeTab}
-          onTabChange={(tab) => {
-            triggerHaptic('light');
-            setActiveTab(tab);
-          }}
-        />
-      </div>
+      </AppShell>
 
       {/* ======================================================== */}
       {/* MODAL 1: ADD NEW QUEST                                   */}
@@ -3502,6 +3601,6 @@ export default function LevelUpApp() {
           </div>
         </div>
       </Modal>
-    </div>
+    </>
   );
 }

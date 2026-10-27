@@ -25,7 +25,6 @@ import {
   ShieldCheck,
   AlertCircle,
   RotateCw,
-  Medal,
   Bell,
   Settings,
   Volume2,
@@ -52,7 +51,14 @@ import {
   EmptyState,
   QuestCard,
   RewardValue,
-  DifficultyBadge
+  DifficultyBadge,
+  RankEmblem,
+  getHunterRank,
+  LeaderboardModeSwitch,
+  LeaderboardRow,
+  LeaderboardPodium,
+  GoldBalance,
+  RewardCard
 } from '@/components/ui';
 import {
   PRIVACY_POLICY_URL,
@@ -288,6 +294,7 @@ export default function LevelUpApp() {
   const [leaderboardTab, setLeaderboardTab] = useState<LeaderboardTab>('all_time');
   const [leaderboardData, setLeaderboardData] = useState<UserProfile[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState(false);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<number>(Date.now());
   const [secondsUntilMidnight, setSecondsUntilMidnight] = useState<number>(getSecondsUntilMidnight);
@@ -855,12 +862,14 @@ export default function LevelUpApp() {
             setUserRank(1);
           }
 
+          setLeaderboardError(false);
           setLeaderboardLoading(false);
           setLastRefreshedAt(Date.now());
         },
         (error) => {
           console.warn('Leaderboard onSnapshot error:', error);
           setLeaderboardLoading(false);
+          setLeaderboardError(true);
         }
       );
 
@@ -868,6 +877,7 @@ export default function LevelUpApp() {
     } catch (e) {
       console.warn('Leaderboard subscription error:', e);
       setLeaderboardLoading(false);
+      setLeaderboardError(true);
     }
   }, [activeTab, leaderboardTab, currentUserId, player.name, player.id, player.avatar, player.level, player.currentXP, player.totalXP, player.dailyXP, player.dailyXPDate, player.gold, player.streakDays, player.lastCompletedDate, player.isPro, player.interestedInPro, todayKey]);
 
@@ -2478,86 +2488,59 @@ export default function LevelUpApp() {
         )}
 
           {/* -------------------------------------------------------- */}
-          {/* TAB 2: LIVE FIRESTORE REAL-TIME LEADERBOARD              */}
-          {/* -------------------------------------------------------- */}
-          {/* TAB 2: GLOBAL LEADERBOARD (ARENA)                        */}
+          {/* TAB 2: TACTICAL ARENA (LEADERBOARD)                      */}
           {/* -------------------------------------------------------- */}
           {activeTab === 'leaderboard' && (
-            <div className="space-y-3.5">
-              {/* Leaderboard Header with Refresh Button & Live Indicator */}
+            <div className="space-y-4">
+              {/* 1. ARENA HEADER WITH STATUS & REFRESH */}
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-[#F5B041]" />
-                  <h2 className="text-sm font-black uppercase tracking-wider text-slate-100">
-                    Live Arena Feed
-                  </h2>
+                  <div className="w-6 h-6 rounded-lg bg-[#F5B041]/10 border border-[#F5B041]/20 flex items-center justify-center text-[#F5B041]">
+                    <Trophy className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black uppercase tracking-wider text-white leading-tight">
+                      Tactical Arena
+                    </h2>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      Global Hunter Standings
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#151A26] text-[#F5B041] border border-white/10 flex items-center gap-1.5" title="Real-time live Firestore feed">
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#151A26] border border-white/10 text-[9px] font-bold text-slate-300 font-stat">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Live Feed
-                  </span>
+                    <span>LIVE FEED</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
                       fetchLiveLeaderboard(true);
-                      showToast('Live leaderboard synced.');
+                      showToast('Live rankings synchronized.');
                     }}
                     disabled={leaderboardLoading}
                     className="p-1.5 rounded-lg bg-[#0E121B] border border-white/10 text-slate-400 hover:text-white transition active:scale-95 disabled:opacity-50"
-                    title="Manual refresh"
+                    title="Synchronize rankings"
+                    aria-label="Synchronize rankings"
                   >
                     <RotateCw className={`w-3.5 h-3.5 ${leaderboardLoading ? 'animate-spin text-[#F5B041]' : ''}`} />
                   </button>
                 </div>
               </div>
 
-              {/* 3-Tab Filter: All-Time Rank vs Today's Daily vs Top Streaks */}
-              <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#0E121B] border border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setLeaderboardTab('all_time')}
-                  className={`py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 ${
-                    leaderboardTab === 'all_time'
-                      ? 'bg-[#F5B041] text-[#080A0F] shadow-sm'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Trophy className="w-3 h-3" />
-                  <span>All-Time</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLeaderboardTab('daily')}
-                  className={`py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 ${
-                    leaderboardTab === 'daily'
-                      ? 'bg-[#F5B041] text-[#080A0F] shadow-sm'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Zap className="w-3 h-3" />
-                  <span>Today's Daily</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLeaderboardTab('streaks')}
-                  className={`py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 ${
-                    leaderboardTab === 'streaks'
-                      ? 'bg-[#F5B041] text-[#080A0F] shadow-sm'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Flame className="w-3 h-3 fill-current" />
-                  <span>Top Streaks</span>
-                </button>
-              </div>
+              {/* 2. LEADERBOARD MODE SELECTOR */}
+              <LeaderboardModeSwitch
+                currentMode={leaderboardTab}
+                onModeChange={(mode) => setLeaderboardTab(mode)}
+              />
 
-              {/* Live Countdown Banner for Today's Reset (12:00 AM Midnight) */}
+              {/* 3. DAILY RESET COUNTDOWN (Daily Mode Only) */}
               {leaderboardTab === 'daily' && (
-                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-amber-500/10 border border-[#F5B041]/30 text-xs">
-                  <div className="flex items-center gap-2 text-slate-300 font-semibold">
-                    <Clock className="w-3.5 h-3.5 text-[#F5B041] animate-pulse" />
-                    <span className="text-[11px]">Today's Reset (12:00 AM Midnight):</span>
+                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#0E121B] border border-[#F5B041]/30 text-xs shadow-sm">
+                  <div className="flex items-center gap-2 text-slate-300 font-medium">
+                    <Clock className="w-3.5 h-3.5 text-[#F5B041]" />
+                    <span className="text-[11px]">Daily Reset at 12:00 AM Midnight:</span>
                   </div>
                   <span className="font-stat font-black text-[#F5B041] tracking-wider text-xs">
                     {formatTimeUntilMidnight(secondsUntilMidnight)}
@@ -2565,245 +2548,258 @@ export default function LevelUpApp() {
                 </div>
               )}
 
-              {/* Pinned User Rank Card (Always pinned using already-loaded profile data: 0 extra reads) */}
-              <Card variant="accent" padding="sm" className="flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0">
+              {/* 4. YOUR POSITION (Persistent Player Dossier in Arena) */}
+              <div className="p-3.5 rounded-2xl bg-[#0E121B] border border-[#F5B041]/40 shadow-sm flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="flex flex-col items-center justify-center w-8 shrink-0">
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Rank</span>
-                    <span className="text-xs font-black font-stat text-[#F5B041]">#{userRank ?? 1}</span>
+                    <span className="text-[9px] uppercase font-bold text-slate-500 font-stat">Rank</span>
+                    <span className="text-sm font-black font-stat text-[#F5B041]">
+                      #{userRank ?? 1}
+                    </span>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-[#080A0F] flex items-center justify-center text-xl border border-[#F5B041]/40 shrink-0">
-                    {player.avatar}
+
+                  <div className="shrink-0">
+                    <RankEmblem rank={getHunterRank(player.level)} size="compact" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <span className="break-words leading-tight">{player.name || 'Your Hunter'}</span>
-                      <span className="text-[10px] px-1 py-0.2 rounded bg-[#F5B041]/20 text-[#F5B041] font-black">
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 leading-none">
+                      <span className="text-xs font-bold text-white truncate">
+                        {player.name || 'Your Hunter'}
+                      </span>
+                      <span className="text-[9px] px-1 py-0.2 rounded bg-[#F5B041]/20 text-[#F5B041] font-black uppercase tracking-wider shrink-0">
                         YOU
                       </span>
-                      {player.isPro && <Crown className="w-3.5 h-3.5 text-[#F5B041] shrink-0" />}
+                      {player.isPro && (
+                        <span title="Pro Operative" className="inline-flex">
+                          <Crown className="w-3 h-3 text-[#F5B041] shrink-0" />
+                        </span>
+                      )}
                     </div>
-                    <div className="text-[10px] text-slate-400 font-medium font-stat">
-                      Lv.{player.level} • {
-                        leaderboardTab === 'all_time'
-                          ? `${player.totalXP.toLocaleString()} XP`
-                          : leaderboardTab === 'daily'
-                          ? `${(player.dailyXPDate === todayKey ? player.dailyXP : 0).toLocaleString()} XP today`
-                          : `${player.streakDays}d streak`
-                      }
-                    </div>
+                    <span className="text-[10px] text-slate-400 font-stat font-medium block mt-1 leading-none">
+                      LV.{player.level} • {player.classTitle}
+                    </span>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <span className="text-xs font-black font-stat text-[#F5B041]">
+
+                <div className="text-right shrink-0 pl-2">
+                  <span className="text-xs font-black font-stat text-[#F5B041] block">
                     {leaderboardTab === 'all_time'
                       ? `${player.totalXP.toLocaleString()} XP`
                       : leaderboardTab === 'daily'
-                      ? `⚡ ${(player.dailyXPDate === todayKey ? player.dailyXP : 0).toLocaleString()} XP`
-                      : `🔥 ${player.streakDays}d`}
+                      ? `+${(player.dailyXPDate === todayKey ? player.dailyXP : 0).toLocaleString()} XP`
+                      : `${player.streakDays}d STREAK`}
+                  </span>
+                  <span className="text-[9px] text-slate-500 font-stat block mt-0.5">
+                    Your Rating
                   </span>
                 </div>
-              </Card>
+              </div>
 
-              {/* Loading Skeleton State */}
-              {leaderboardLoading ? (
+              {/* 5. ERROR STATE */}
+              {leaderboardError && leaderboardData.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-[#0E121B] border border-rose-500/20 text-center space-y-3">
+                  <div className="w-10 h-10 mx-auto rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-white">
+                      Arena Connection Lost
+                    </h3>
+                    <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                      Unable to retrieve current rankings from live feed.
+                    </p>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon={<RotateCw className="w-3.5 h-3.5" />}
+                    onClick={() => {
+                      setLeaderboardError(false);
+                      fetchLiveLeaderboard(true);
+                    }}
+                  >
+                    Retry Connection
+                  </Button>
+                </div>
+              ) : leaderboardLoading && leaderboardData.length === 0 ? (
+                /* Loading Skeleton */
                 <div className="space-y-2">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <Card
+                    <div
                       key={i}
-                      variant="base"
-                      padding="sm"
-                      className="flex items-center justify-between animate-pulse"
+                      className="p-3.5 rounded-2xl bg-[#0E121B] border border-white/[0.04] flex items-center justify-between animate-pulse"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-4 bg-white/10 rounded" />
-                        <div className="w-10 h-10 bg-white/10 rounded-xl" />
+                        <div className="w-8 h-8 bg-white/10 rounded-xl" />
                         <div className="space-y-1.5">
                           <div className="w-24 h-3 bg-white/10 rounded" />
                           <div className="w-16 h-2.5 bg-white/10 rounded" />
                         </div>
                       </div>
-                      <div className="w-14 h-4 bg-white/10 rounded" />
-                    </Card>
+                      <div className="w-16 h-4 bg-white/10 rounded" />
+                    </div>
                   ))}
                 </div>
               ) : leaderboardData.length === 0 ? (
                 /* Empty State */
                 <EmptyState
                   icon={<Trophy className="w-6 h-6 text-[#F5B041]" />}
-                  title="Be The First on the Leaderboard"
-                  description="Complete your daily habit quests to earn XP and claim the #1 Global Hunter rank!"
+                  title="ARENA DATA UNAVAILABLE"
+                  description="No operatives have entered the arena yet. Complete quests to take the lead!"
                 />
               ) : (
-                /* Live Firestore Players List with Top-3 Podium Accents */
-                <div className="space-y-2">
-                  {leaderboardData.map((operative, idx) => {
-                    const rankNum = idx + 1;
-                    const isRank1 = rankNum === 1;
-                    const isRank2 = rankNum === 2;
-                    const isRank3 = rankNum === 3;
-                    const isCurrentUser = operative.uid === currentUserId || (player.name && operative.username?.toLowerCase() === player.name?.toLowerCase());
-
-                    let podiumClass = 'border-white/[0.08] bg-[#0E121B]';
-                    let rankBadge = (
-                      <span className="text-xs font-bold font-stat text-slate-500 w-6 text-center shrink-0">
-                        #{rankNum}
+                /* 6. TOP 3 PODIUM & REMAINING ROSTER */
+                <div className="space-y-4">
+                  {/* Top 3 Podium */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Top Operatives
                       </span>
-                    );
+                      <span className="text-[10px] text-slate-500 font-stat">
+                        Podium Honors
+                      </span>
+                    </div>
 
-                    if (isRank1) {
-                      podiumClass = 'border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-[#0E121B] to-[#0E121B] shadow-sm shadow-amber-500/10';
-                      rankBadge = (
-                        <div className="flex flex-col items-center justify-center w-6 shrink-0">
-                          <Crown className="w-3.5 h-3.5 text-[#F5B041]" />
-                          <span className="text-xs font-black font-stat text-[#F5B041]">#1</span>
-                        </div>
-                      );
-                    } else if (isRank2) {
-                      podiumClass = 'border-slate-300/30 bg-gradient-to-r from-slate-300/10 via-[#0E121B] to-[#0E121B]';
-                      rankBadge = (
-                        <div className="flex flex-col items-center justify-center w-6 shrink-0">
-                          <Medal className="w-3.5 h-3.5 text-slate-300" />
-                          <span className="text-xs font-black font-stat text-slate-300">#2</span>
-                        </div>
-                      );
-                    } else if (isRank3) {
-                      podiumClass = 'border-amber-700/30 bg-gradient-to-r from-amber-700/10 via-[#0E121B] to-[#0E121B]';
-                      rankBadge = (
-                        <div className="flex flex-col items-center justify-center w-6 shrink-0">
-                          <Medal className="w-3.5 h-3.5 text-amber-600" />
-                          <span className="text-xs font-black font-stat text-amber-500">#3</span>
-                        </div>
-                      );
-                    }
+                    <LeaderboardPodium
+                      entries={leaderboardData.slice(0, 3).map((op, idx) => ({
+                        rank: (idx + 1) as 1 | 2 | 3,
+                        username: op.username || 'Hunter',
+                        avatarIcon: getAvatarIcon(op.avatar_id),
+                        level: op.level || 1,
+                        metricLabel:
+                          leaderboardTab === 'all_time'
+                            ? `${(op.total_xp || 0).toLocaleString()} XP`
+                            : leaderboardTab === 'daily'
+                            ? `+${(op.daily_xp_date === todayKey ? (op.daily_xp || 0) : 0).toLocaleString()} XP`
+                            : `${op.streak_days || 0}d STREAK`,
+                        isCurrentUser:
+                          op.uid === currentUserId ||
+                          (Boolean(player.name) && op.username?.toLowerCase() === player.name?.toLowerCase()),
+                        isPro: op.is_pro
+                      }))}
+                    />
+                  </div>
 
-                    const operativeDailyXP = operative.daily_xp_date === todayKey ? (operative.daily_xp || 0) : 0;
+                  {/* Remaining Roster (#4+) */}
+                  {leaderboardData.length > 3 && (
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          Arena Roster
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-stat">
+                          Ranks 4 – ${leaderboardData.length}
+                        </span>
+                      </div>
 
-                    return (
-                      <div
-                        key={operative.uid || idx}
-                        className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${podiumClass}`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {rankBadge}
-                          <div className="w-9 h-9 rounded-xl bg-[#080A0F] flex items-center justify-center text-lg border border-white/10 shrink-0">
-                            {getAvatarIcon(operative.avatar_id)}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
-                              <span className="break-words leading-tight">{operative.username || 'Anonymous Hunter'}</span>
-                              {isCurrentUser && (
-                                <span className="text-[9px] px-1 rounded bg-[#F5B041]/20 text-[#F5B041] font-bold">
-                                  You
-                                </span>
-                              )}
-                              {operative.is_pro && (
-                                <Crown className="w-3 h-3 text-[#F5B041] shrink-0" />
-                              )}
-                            </div>
-                            <div className="text-[10px] text-slate-400 font-stat">
-                              Lv.{operative.level || 1}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="text-right shrink-0">
-                          <span className={`text-xs font-black font-stat ${isRank1 ? 'text-[#F5B041]' : isRank2 ? 'text-slate-300' : isRank3 ? 'text-amber-500' : 'text-slate-300'}`}>
-                            {leaderboardTab === 'all_time'
+                      <div className="space-y-2">
+                        {leaderboardData.slice(3).map((operative, idx) => {
+                          const rankNum = idx + 4;
+                          const isCurrentUser =
+                            operative.uid === currentUserId ||
+                            (Boolean(player.name) && operative.username?.toLowerCase() === player.name?.toLowerCase());
+                          const metricLabel =
+                            leaderboardTab === 'all_time'
                               ? `${(operative.total_xp || 0).toLocaleString()} XP`
                               : leaderboardTab === 'daily'
-                              ? `⚡ ${operativeDailyXP.toLocaleString()} XP`
-                              : `🔥 ${operative.streak_days || 0}d`}
-                          </span>
-                        </div>
+                              ? `+${(operative.daily_xp_date === todayKey ? (operative.daily_xp || 0) : 0).toLocaleString()} XP`
+                              : `${operative.streak_days || 0}d STREAK`;
+
+                          return (
+                            <LeaderboardRow
+                              key={operative.uid || rankNum}
+                              rank={rankNum}
+                              username={operative.username || 'Hunter'}
+                              avatarIcon={getAvatarIcon(operative.avatar_id)}
+                              level={operative.level || 1}
+                              metricLabel={metricLabel}
+                              isCurrentUser={isCurrentUser}
+                              isPro={operative.is_pro}
+                            />
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
 
           {/* -------------------------------------------------------- */}
-          {/* TAB 3: REWARD SHOP                                       */}
+          {/* TAB 3: ARMORY (REWARD INVENTORY)                         */}
           {/* -------------------------------------------------------- */}
           {activeTab === 'shop' && (
-            <div className="space-y-3.5">
-              {/* Treasury Header */}
-              <Card variant="base" padding="md" className="flex items-center justify-between">
+            <div className="space-y-4">
+              {/* 1. ARMORY HEADER */}
+              <div className="flex items-center justify-between px-1">
                 <div>
-                  <div className="text-[10px] font-bold text-[#F5B041] uppercase tracking-wider">Gold Vault</div>
-                  <div className="text-2xl font-black font-stat text-white flex items-center gap-1.5 mt-0.5">
-                    <span>🪙</span>
-                    <span>{player.gold} Gold</span>
+                  <h2 className="text-sm font-black uppercase tracking-wider text-white">
+                    Armory
+                  </h2>
+                  <span className="text-[10px] text-slate-400 font-medium">
+                    Tactical Rewards & Personal Inventory
+                  </span>
+                </div>
+                <Badge variant="gold" size="sm" className="font-stat">
+                  {rewards.length} Requisitions
+                </Badge>
+              </div>
+
+              {/* 2. GOLD BALANCE VAULT HEADER */}
+              <GoldBalance
+                gold={player.gold}
+                onAddCustomReward={() => setIsAddRewardModal(true)}
+              />
+
+              {/* 3. REWARDS LIST */}
+              {rewards.length === 0 ? (
+                <EmptyState
+                  icon={<Gift className="w-6 h-6 text-[#F5B041]" />}
+                  title="YOUR ARMORY IS EMPTY"
+                  description="Create custom personal rewards you can claim with your earned quest gold. Turn completed quests into something you actually want."
+                  action={
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={<Plus className="w-3.5 h-3.5" />}
+                      onClick={() => setIsAddRewardModal(true)}
+                    >
+                      Create Personal Reward
+                    </Button>
+                  }
+                />
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Available Requisitions
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-stat">
+                      Instant Gold Redeem
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {rewards.map((reward) => (
+                      <RewardCard
+                        key={reward.id}
+                        id={reward.id}
+                        name={reward.name}
+                        icon={reward.icon}
+                        cost={reward.cost}
+                        claimedCount={reward.claimedCount}
+                        category={reward.category}
+                        currentGold={player.gold}
+                        onClaim={() => handleClaimReward(reward)}
+                      />
+                    ))}
                   </div>
                 </div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={<Plus className="w-3.5 h-3.5 stroke-[3]" />}
-                  onClick={() => setIsAddRewardModal(true)}
-                >
-                  Custom Loot
-                </Button>
-              </Card>
-
-              {/* Rewards List */}
-              <div className="space-y-2">
-                {rewards.length === 0 ? (
-                  <EmptyState
-                    icon={<Gift className="w-6 h-6 text-[#F5B041]" />}
-                    title="Vault Empty"
-                    description="Create custom real-life rewards you can purchase with your earned quest gold."
-                    action={
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        icon={<Plus className="w-3.5 h-3.5" />}
-                        onClick={() => setIsAddRewardModal(true)}
-                      >
-                        Add Custom Reward
-                      </Button>
-                    }
-                  />
-                ) : (
-                  rewards.map((reward) => {
-                    const canAfford = player.gold >= reward.cost;
-
-                    return (
-                      <Card
-                        key={reward.id}
-                        variant="base"
-                        padding="sm"
-                        className="flex items-center justify-between gap-3 shadow-sm"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-[#080A0F] border border-white/10 flex items-center justify-center text-xl shrink-0">
-                            {reward.icon}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-xs font-bold text-white break-words">{reward.name}</div>
-                            <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
-                              <span className="text-[#F5B041] font-bold font-stat">🪙 {reward.cost} Gold</span>
-                              {reward.claimedCount > 0 && <span className="font-stat">• Claimed {reward.claimedCount}x</span>}
-                            </div>
-                          </div>
-                        </div>
-
-                        <Button
-                          size="sm"
-                          variant={canAfford ? 'primary' : 'outline'}
-                          disabled={!canAfford}
-                          onClick={() => handleClaimReward(reward)}
-                          className={!canAfford ? 'opacity-40 cursor-not-allowed' : ''}
-                        >
-                          Claim
-                        </Button>
-                      </Card>
-                    );
-                  })
-                )}
-              </div>
+              )}
             </div>
           )}
 

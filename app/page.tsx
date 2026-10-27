@@ -39,6 +39,7 @@ import {
   initNativeApp,
   triggerHaptic,
   triggerGameHaptic,
+  setupBackButtonListener,
   isNativePlatform
 } from './utils/native';
 import { usePreferences } from './hooks/usePreferences';
@@ -77,7 +78,6 @@ import {
   auth,
   db,
   googleProvider,
-  isFirebaseConfigured,
   UserProfile,
   HabitDocument,
   DIFFICULTY_REWARDS,
@@ -112,7 +112,6 @@ import {
   limit,
   getDocs,
   onSnapshot,
-  increment,
   arrayUnion,
   arrayRemove,
   addDoc
@@ -356,6 +355,7 @@ export default function LevelUpApp() {
   const [particles, setParticles] = useState<FloatingParticle[]>([]);
   const particleIdRef = useRef(0);
   const avatarCustomizerRef = useRef<HTMLDivElement>(null);
+  const isClaimingRewardRef = useRef(false);
 
   // New Quest Form
   const [newQuestName, setNewQuestName] = useState('');
@@ -379,6 +379,49 @@ export default function LevelUpApp() {
       day: 'numeric'
     }).toUpperCase();
   }, []);
+
+  // Hardware Back Button Navigation Handler (Capacitor Android)
+  useEffect(() => {
+    return setupBackButtonListener(() => {
+      if (isDeleteAccountModal) {
+        setIsDeleteAccountModal(false);
+        return true;
+      }
+      if (isSettingsModal) {
+        setIsSettingsModal(false);
+        return true;
+      }
+      if (isLevelUpModal) {
+        setIsLevelUpModal(false);
+        return true;
+      }
+      if (isAddRewardModal) {
+        setIsAddRewardModal(false);
+        return true;
+      }
+      if (editingHabit !== null) {
+        setEditingHabit(null);
+        return true;
+      }
+      if (isAddQuestModal) {
+        setIsAddQuestModal(false);
+        return true;
+      }
+      if (activeTab !== 'quests') {
+        setActiveTab('quests');
+        return true;
+      }
+      return false; // Allows native App.exitApp()
+    });
+  }, [
+    isDeleteAccountModal,
+    isSettingsModal,
+    isLevelUpModal,
+    isAddRewardModal,
+    editingHabit,
+    isAddQuestModal,
+    activeTab
+  ]);
 
   const weekDays = useMemo(() => {
     const baseDate = addDays(new Date(), weekOffset * 7);
@@ -553,7 +596,7 @@ export default function LevelUpApp() {
         console.warn('Background profile cloud sync error:', err);
       });
     }
-  }, [player, isLoaded, currentUserId]);
+  }, [player, isLoaded, currentUserId, todayKey]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -776,7 +819,7 @@ export default function LevelUpApp() {
         setCurrentScreen('auth');
       }
     }
-  }, []);
+  }, [todayKey]);
 
   // verifyUserProfile = syncUserDataOnAuth (handled by onAuthStateChanged)
 
@@ -950,7 +993,6 @@ export default function LevelUpApp() {
 
           setLeaderboardError(false);
           setLeaderboardLoading(false);
-          setLastRefreshedAt(Date.now());
         },
         (error) => {
           console.warn('Leaderboard onSnapshot error:', error);
@@ -965,9 +1007,11 @@ export default function LevelUpApp() {
       setLeaderboardLoading(false);
       setLeaderboardError(true);
     }
-  }, [activeTab, leaderboardTab, currentUserId, player.name, player.id, player.avatar, player.level, player.currentXP, player.totalXP, player.dailyXP, player.dailyXPDate, player.gold, player.streakDays, player.lastCompletedDate, player.isPro, player.interestedInPro, todayKey]);
+  }, [activeTab, leaderboardTab, currentUserId, player.name, player.id, player.avatar, player.level, player.currentXP, player.totalXP, player.dailyXP, player.dailyXPDate, player.gold, player.streakDays, player.lastCompletedDate, player.isPro, player.interestedInPro, todayKey, lastRefreshedAt]);
 
-  const fetchLiveLeaderboard = useCallback((_force = false) => {
+  const fetchLiveLeaderboard = useCallback(() => {
+    setLeaderboardLoading(true);
+    setLeaderboardError(false);
     setLastRefreshedAt(Date.now());
   }, []);
 
@@ -1836,12 +1880,18 @@ export default function LevelUpApp() {
   };
 
   const handleClaimReward = (reward: RewardItem) => {
+    if (isClaimingRewardRef.current) return;
     if (player.gold < reward.cost) {
       showToast(`Not enough Gold! Need ${reward.cost - player.gold} more gold.`);
       return;
     }
 
-    const nextGold = player.gold - reward.cost;
+    isClaimingRewardRef.current = true;
+    setTimeout(() => {
+      isClaimingRewardRef.current = false;
+    }, 400);
+
+    const nextGold = Math.max(0, player.gold - reward.cost);
     setPlayer((prev) => ({ ...prev, gold: nextGold }));
 
     if (currentUserId && currentUserId !== 'user_init') {
@@ -1987,6 +2037,8 @@ export default function LevelUpApp() {
                   <input
                     type="email"
                     required
+                    inputMode="email"
+                    autoComplete="email"
                     placeholder="hunter@levelup.app"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
@@ -2004,6 +2056,7 @@ export default function LevelUpApp() {
                   <input
                     type="password"
                     required
+                    autoComplete={isSignUpMode ? 'new-password' : 'current-password'}
                     placeholder="••••••••"
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
@@ -2580,7 +2633,7 @@ export default function LevelUpApp() {
                   <button
                     type="button"
                     onClick={() => {
-                      fetchLiveLeaderboard(true);
+                      fetchLiveLeaderboard();
                       showToast('Live rankings synchronized.');
                     }}
                     disabled={leaderboardLoading}
@@ -2680,7 +2733,7 @@ export default function LevelUpApp() {
                     icon={<RotateCw className="w-3.5 h-3.5" />}
                     onClick={() => {
                       setLeaderboardError(false);
-                      fetchLiveLeaderboard(true);
+                      fetchLiveLeaderboard();
                     }}
                   >
                     Retry Connection
@@ -3134,6 +3187,7 @@ export default function LevelUpApp() {
             <input
               type="text"
               required
+              maxLength={100}
               placeholder="e.g. Read 20 pages, 30m workout, meditate..."
               value={newQuestName}
               onChange={(e) => setNewQuestName(e.target.value)}
@@ -3370,6 +3424,7 @@ export default function LevelUpApp() {
             <input
               type="text"
               required
+              maxLength={80}
               placeholder="e.g. 1hr gaming, movie ticket, iced coffee..."
               value={newRewardName}
               onChange={(e) => setNewRewardName(e.target.value)}
@@ -3403,6 +3458,7 @@ export default function LevelUpApp() {
               </label>
               <input
                 type="number"
+                inputMode="numeric"
                 min={10}
                 max={1000}
                 value={newRewardCost}

@@ -45,6 +45,13 @@ export function usePreferences() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [preferences.reducedMotion]);
 
+  // Synchronize .reduce-motion CSS class on document element
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('reduce-motion', isReducedMotion);
+    }
+  }, [isReducedMotion]);
+
   // Update sound preference
   const updateSound = useCallback((enabled: boolean) => {
     setSoundActive(enabled);

@@ -27,11 +27,6 @@ import {
   RotateCw,
   Bell,
   Settings,
-  Volume2,
-  VolumeX,
-  BellOff,
-  ExternalLink,
-  FileText,
   Pencil,
   Clock
 } from 'lucide-react';
@@ -40,7 +35,14 @@ import {
   playCoinSound,
   playLevelUpSound
 } from './utils/audio';
-import { initNativeApp, triggerHaptic, scheduleStreakProtectionReminder, isNativePlatform } from './utils/native';
+import {
+  initNativeApp,
+  triggerHaptic,
+  triggerGameHaptic,
+  isNativePlatform
+} from './utils/native';
+import { usePreferences } from './hooks/usePreferences';
+import { SystemSettingsModal } from '../components/settings/SystemSettingsModal';
 import {
   AppShell,
   Button,
@@ -337,8 +339,17 @@ export default function LevelUpApp() {
   const [isSettingsModal, setIsSettingsModal] = useState(false);
   const [isDeleteAccountModal, setIsDeleteAccountModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [reminderEnabled, setReminderEnabled] = useState(true);
+
+  // Centralized System Configuration & Sensory Preferences (P1 Phase 4B)
+  const {
+    preferences,
+    isReducedMotion,
+    setSoundEnabled,
+    setHapticsEnabled,
+    setReducedMotion,
+    setNotificationsEnabled
+  } = usePreferences();
+  const soundEnabled = preferences.soundEnabled;
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Particles
@@ -497,6 +508,7 @@ export default function LevelUpApp() {
   };
 
   const spawnParticle = (text: string, color = '#F5B041', x?: number, y?: number) => {
+    if (isReducedMotion) return; // Suppress particle animations when reduced motion is enabled
     const id = ++particleIdRef.current;
     const posX = x || (typeof window !== 'undefined' ? window.innerWidth / 2 : 200);
     const posY = y || (typeof window !== 'undefined' ? window.innerHeight / 2 : 300);
@@ -966,20 +978,6 @@ export default function LevelUpApp() {
     setIsClient(true);
     initNativeApp();
 
-    // Load sound and streak reminder preferences
-    const savedSound = localStorage.getItem('levelup_sound');
-    if (savedSound !== null) {
-      setSoundEnabled(savedSound !== 'false');
-    }
-
-    const savedReminder = localStorage.getItem('levelup_reminder');
-    const isReminderOn = savedReminder !== 'false';
-    if (savedReminder !== null) {
-      setReminderEnabled(isReminderOn);
-    }
-    // Schedule 9:00 PM daily streak protection reminder if active
-    scheduleStreakProtectionReminder(isReminderOn);
-
     // 1. Instant 0ms Local Hydration: Player Profile
     const cachedProfileRaw = localStorage.getItem('levelup_profile') || localStorage.getItem('levelup_player');
     let hasValidCachedProfile = false;
@@ -1280,7 +1278,9 @@ export default function LevelUpApp() {
       localStorage.setItem('levelup_player', JSON.stringify(initializedPlayer));
 
       playLevelUpSound(false);
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+      if (!isReducedMotion) {
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+      }
 
       showToast(`System Awakened! Welcome Hunter ${cleanName}.`);
       setCurrentScreen('main');
@@ -1311,23 +1311,6 @@ export default function LevelUpApp() {
     setCurrentScreen('auth');
     triggerHaptic('light');
     showToast('Signed out of LEVEL UP.');
-  };
-
-  const handleToggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    localStorage.setItem('levelup_sound', String(next));
-    triggerHaptic('light');
-    showToast(next ? 'Sound effects enabled' : 'Sound effects muted');
-  };
-
-  const handleToggleReminder = async () => {
-    const next = !reminderEnabled;
-    setReminderEnabled(next);
-    localStorage.setItem('levelup_reminder', String(next));
-    await scheduleStreakProtectionReminder(next);
-    triggerHaptic('light');
-    showToast(next ? 'Daily 9:00 PM streak reminder active' : 'Streak reminder deactivated');
   };
 
   // 1-Tap Student Starter Quest Quick Add
@@ -1450,6 +1433,9 @@ export default function LevelUpApp() {
       localStorage.removeItem('levelup_rewards');
       localStorage.removeItem('levelup_sound');
       localStorage.removeItem('levelup_reminder');
+      localStorage.removeItem('levelup_haptics');
+      localStorage.removeItem('levelup_reduced_motion');
+      localStorage.removeItem('levelup_preferences');
 
       setCurrentUser(null);
       setCurrentUserId(null);
@@ -1523,7 +1509,9 @@ export default function LevelUpApp() {
         setIsLevelUpModal(true);
         triggerHaptic('heavy');
         playLevelUpSound(!soundEnabled);
-        confetti({ particleCount: 90, spread: 80, origin: { y: 0.5 } });
+        if (!isReducedMotion) {
+          confetti({ particleCount: 90, spread: 80, origin: { y: 0.5 } });
+        }
       }
 
       setPlayer((prev) => ({
@@ -1643,7 +1631,9 @@ export default function LevelUpApp() {
     playLevelUpSound(!soundEnabled);
     triggerHaptic('success');
     spawnParticle(`ALL QUESTS COMPLETED! 🔥`, '#F5B041');
-    confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+    if (!isReducedMotion) {
+      confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+    }
 
     // Mark all locally
     setHabits((prev) =>
@@ -3443,214 +3433,49 @@ export default function LevelUpApp() {
       </Modal>
 
       {/* ======================================================== */}
-      {/* MODAL 4: SETTINGS & COMPLIANCE BOTTOM SHEET             */}
+      {/* MODAL 4: SYSTEM CONFIGURATION SHEET (Phase 4B)           */}
       {/* ======================================================== */}
-      <Modal
+      <SystemSettingsModal
         isOpen={isSettingsModal}
         onClose={() => setIsSettingsModal(false)}
-        title={
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#F5B041]/10 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041]">
-              <Settings className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-sm font-bold text-white block">System Settings</span>
-              <p className="text-[10px] text-slate-400 font-normal">Audio, notifications, and compliance</p>
-            </div>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          {/* Section 1: Tactile & Audio Preferences */}
-          <div className="space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
-              Audio & Alerts
-            </span>
-
-            {/* Sound Effects Toggle */}
-            <div className="p-3 rounded-xl bg-[#080A0F] border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
-                  {soundEnabled ? (
-                    <Volume2 className="w-4 h-4 text-[#F5B041]" />
-                  ) : (
-                    <VolumeX className="w-4 h-4 text-slate-500" />
-                  )}
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-200">Sound Effects</div>
-                  <div className="text-[10px] text-slate-400">Audio chime on habit completion & level up</div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleToggleSound}
-                className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
-                  soundEnabled ? 'bg-[#F5B041]' : 'bg-white/10'
-                }`}
-              >
-                <span
-                  className={`w-5 h-5 rounded-full bg-[#080A0F] shadow-sm transform transition-transform ${
-                    soundEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-
-            {/* 9:00 PM Streak Protection Reminder Toggle */}
-            <div className="p-3 rounded-xl bg-[#080A0F] border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
-                  {reminderEnabled ? (
-                    <Bell className="w-4 h-4 text-[#3B82F6]" />
-                  ) : (
-                    <BellOff className="w-4 h-4 text-slate-500" />
-                  )}
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-200">9:00 PM Streak Alert</div>
-                  <div className="text-[10px] text-slate-400">Daily reminder if quests remain incomplete</div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleToggleReminder}
-                className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
-                  reminderEnabled ? 'bg-[#3B82F6]' : 'bg-white/10'
-                }`}
-              >
-                <span
-                  className={`w-5 h-5 rounded-full bg-[#080A0F] shadow-sm transform transition-transform ${
-                    reminderEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Section 2: Legal & Support (Play Store Compliance) */}
-          <div className="space-y-2 pt-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
-              Legal & Support
-            </span>
-
-            {/* Privacy Policy */}
-            <a
-              href={PRIVACY_POLICY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => triggerHaptic('light')}
-              className="p-3 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 flex items-center justify-between transition group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
-                  <FileText className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-200 group-hover:text-white">Privacy Policy</div>
-                  <div className="text-[10px] text-slate-400">Data usage, encryption, and player privacy</div>
-                </div>
-              </div>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300" />
-            </a>
-
-            {/* Terms of Service */}
-            <a
-              href={TERMS_OF_SERVICE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => triggerHaptic('light')}
-              className="p-3 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 flex items-center justify-between transition group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
-                  <FileText className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-200 group-hover:text-white">Terms of Service</div>
-                  <div className="text-[10px] text-slate-400">Rules of engagement & terms of use</div>
-                </div>
-              </div>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300" />
-            </a>
-
-            {/* Beta Feedback */}
-            <a
-              href={FEEDBACK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => triggerHaptic('light')}
-              className="p-3 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 hover:border-[#F5B041]/40 flex items-center justify-between transition group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#F5B041]/10 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041] text-sm">
-                  💡
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-200 group-hover:text-white">Give Beta Feedback</div>
-                  <div className="text-[10px] text-slate-400">Share suggestions or report bugs</div>
-                </div>
-              </div>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#F5B041]" />
-            </a>
-
-            {/* Developer Support Email */}
-            <a
-              href={`mailto:${SUPPORT_EMAIL}`}
-              onClick={() => triggerHaptic('light')}
-              className="p-3 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 flex items-center justify-between transition group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
-                  <Mail className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-200 group-hover:text-white">Support & Feedback</div>
-                  <div className="text-[10px] text-slate-400">{SUPPORT_EMAIL}</div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-slate-300" />
-            </a>
-          </div>
-
-          {/* Version & Build */}
-          <div className="text-center py-1">
-            <span className="text-[10px] text-slate-500 font-stat">
-              LEVEL UP v{APP_VERSION} (Build {BUILD_NUMBER}) • Production RPG System
-            </span>
-          </div>
-
-          {/* Section 3: Account Actions (Log Out & Mandatory Delete Account) */}
-          <div className="pt-2 border-t border-white/[0.08] space-y-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="md"
-              icon={<LogOut className="w-3.5 h-3.5" />}
-              onClick={handleSignOut}
-              className="w-full"
-            >
-              Sign Out of Account
-            </Button>
-
-            <Button
-              type="button"
-              variant="danger"
-              size="md"
-              icon={<Trash2 className="w-3.5 h-3.5" />}
-              onClick={() => {
-                triggerHaptic('warning');
-                setIsDeleteAccountModal(true);
-              }}
-              className="w-full"
-            >
-              Delete Account & Purge Data
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        player={{
+          name: player.name,
+          avatar: player.avatar,
+          level: player.level,
+          classTitle: player.classTitle,
+          isPro: player.isPro
+        }}
+        currentUserEmail={currentUser?.email}
+        preferences={preferences}
+        isReducedMotion={isReducedMotion}
+        onToggleSound={(enabled) => {
+          setSoundEnabled(enabled);
+          triggerGameHaptic('light');
+        }}
+        onToggleHaptics={(enabled) => {
+          setHapticsEnabled(enabled);
+          if (enabled) triggerHaptic('light');
+        }}
+        onSetReducedMotion={(mode) => {
+          setReducedMotion(mode);
+          triggerGameHaptic('light');
+        }}
+        onToggleNotifications={async (enabled) => {
+          await setNotificationsEnabled(enabled);
+          triggerGameHaptic('light');
+        }}
+        onSignOut={handleSignOut}
+        onRequestDeleteAccount={() => {
+          triggerGameHaptic('warning');
+          setIsDeleteAccountModal(true);
+        }}
+        privacyPolicyUrl={PRIVACY_POLICY_URL}
+        termsOfServiceUrl={TERMS_OF_SERVICE_URL}
+        feedbackUrl={FEEDBACK_URL}
+        supportEmail={SUPPORT_EMAIL}
+        appVersion={APP_VERSION}
+        buildNumber={BUILD_NUMBER}
+      />
 
       {/* ======================================================== */}
       {/* MODAL 5: MANDATORY ACCOUNT DELETION CONFIRMATION         */}

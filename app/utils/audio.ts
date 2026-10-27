@@ -2,6 +2,13 @@
 // Zero external files, works offline, 100% reliable on smartphone browsers
 
 let audioCtx: AudioContext | null = null;
+let soundActive = true;
+
+export const setSoundActive = (active: boolean) => {
+  soundActive = active;
+};
+
+export const getSoundActive = (): boolean => soundActive;
 
 const getAudioContext = (): AudioContext | null => {
   if (typeof window === 'undefined') return null;
@@ -18,8 +25,8 @@ const getAudioContext = (): AudioContext | null => {
 };
 
 // Play Quest Complete Chime
-export const playQuestCompleteSound = (muted: boolean) => {
-  if (muted) return;
+export const playQuestCompleteSound = (muted = false) => {
+  if (!soundActive || muted) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -49,8 +56,8 @@ export const playQuestCompleteSound = (muted: boolean) => {
 };
 
 // Play Coin Sound
-export const playCoinSound = (muted: boolean) => {
-  if (muted) return;
+export const playCoinSound = (muted = false) => {
+  if (!soundActive || muted) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -73,8 +80,8 @@ export const playCoinSound = (muted: boolean) => {
 };
 
 // Play Boss Hit Sound
-export const playBossHitSound = (muted: boolean) => {
-  if (muted) return;
+export const playBossHitSound = (muted = false) => {
+  if (!soundActive || muted) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -97,8 +104,8 @@ export const playBossHitSound = (muted: boolean) => {
 };
 
 // Play Epic Level Up Fanfare
-export const playLevelUpSound = (muted: boolean) => {
-  if (muted) return;
+export const playLevelUpSound = (muted = false) => {
+  if (!soundActive || muted) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -127,4 +134,30 @@ export const playLevelUpSound = (muted: boolean) => {
     osc.start(now + delay);
     osc.stop(now + delay + 0.32);
   });
+};
+
+// Centralized Semantic Audio Dispatcher (Section 7 & 8)
+export type GameSoundType = 'quest_complete' | 'purchase' | 'coin' | 'level_up' | 'boss_hit' | 'button';
+
+export const playGameSound = (type: GameSoundType) => {
+  if (!soundActive) return;
+
+  switch (type) {
+    case 'quest_complete':
+      playQuestCompleteSound();
+      break;
+    case 'purchase':
+    case 'coin':
+      playCoinSound();
+      break;
+    case 'level_up':
+      playLevelUpSound();
+      break;
+    case 'boss_hit':
+      playBossHitSound();
+      break;
+    case 'button':
+      // Intentionally silent per spec Section 8
+      break;
+  }
 };

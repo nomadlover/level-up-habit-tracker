@@ -10,6 +10,15 @@ export const isNativePlatform = (): boolean => {
   return Capacitor.isNativePlatform();
 };
 
+// Global Haptic sensory preference state (Section 6)
+let hapticsActive = true;
+
+export const setHapticsActive = (active: boolean) => {
+  hapticsActive = active;
+};
+
+export const getHapticsActive = (): boolean => hapticsActive;
+
 // Initialize native styling and splash screen
 export const initNativeApp = async () => {
   if (!isNativePlatform()) return;
@@ -32,6 +41,8 @@ export const initNativeApp = async () => {
 
 // Native tactile vibration / haptics with Web fallback
 export const triggerHaptic = async (type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' = 'light') => {
+  if (!hapticsActive) return;
+
   try {
     if (isNativePlatform()) {
       if (type === 'light') {
@@ -62,6 +73,12 @@ export const triggerHaptic = async (type: 'light' | 'medium' | 'heavy' | 'succes
   } catch {
     // Fail silently on unsupported hardware
   }
+};
+
+// Centralized Haptic Wrapper (Section 6)
+export const triggerGameHaptic = async (type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' = 'light') => {
+  if (!hapticsActive) return;
+  await triggerHaptic(type);
 };
 
 // 9:00 PM Daily Streak Protection Notification

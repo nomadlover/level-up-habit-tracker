@@ -20,3 +20,5 @@ export * from './HunterIdentity';
 export * from './ProgressionCard';
 export * from './StatGrid';
 export * from './AchievementBadge';
+export * from './SettingsToggle';
+export * from './SettingsRow';

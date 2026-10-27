@@ -13,9 +13,6 @@ import {
   Award,
   Zap,
   Sword,
-  X,
-  ShoppingBag,
-  User,
   Crown,
   Gift,
   CheckCircle2,
@@ -45,6 +42,7 @@ import {
   playLevelUpSound
 } from './utils/audio';
 import { initNativeApp, triggerHaptic, scheduleStreakProtectionReminder, isNativePlatform } from './utils/native';
+import { TopBar, BottomNav, Button, Card, Badge, ProgressBar, Modal, EmptyState } from '@/components/ui';
 import {
   PRIVACY_POLICY_URL,
   TERMS_OF_SERVICE_URL,
@@ -1806,16 +1804,16 @@ export default function LevelUpApp() {
   // ----------------------------------------------------
   if (currentScreen === 'auth') {
     return (
-      <div className="min-h-screen bg-[#0A0D14] text-slate-100 flex flex-col items-center justify-center p-4 relative selection:bg-[#F5B041]/30">
+      <div className="min-h-screen bg-[#080A0F] text-slate-100 flex flex-col items-center justify-center p-4 relative selection:bg-[#F5B041]/30">
         <div className="w-full max-w-sm flex flex-col space-y-5 animate-in fade-in duration-300">
           {/* System Awakening Header */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#121722] border border-[#1E2638] text-[10px] font-black tracking-widest uppercase text-[#F5B041]">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E121B] border border-white/10 text-[10px] font-black tracking-widest uppercase text-[#F5B041]">
               <Sparkles className="w-3 h-3" />
               <span>SYSTEM AWAKENING PROTOCOL</span>
             </div>
 
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#121722] border-2 border-[#F5B041] flex items-center justify-center text-2xl shadow-lg shadow-[#F5B041]/15 my-2">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#0E121B] border-2 border-[#F5B041] flex items-center justify-center text-2xl shadow-lg shadow-[#F5B041]/15 my-2">
               👑
             </div>
 
@@ -1826,9 +1824,9 @@ export default function LevelUpApp() {
           </div>
 
           {/* Auth Card */}
-          <div className="p-5 rounded-2xl bg-[#121722] border border-[#1E2638] shadow-xl space-y-4">
+          <Card variant="base" padding="md" className="shadow-xl space-y-4">
             {/* Mode Switcher */}
-            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-[#0A0D14] border border-[#1E2638]">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-[#080A0F] border border-white/10">
               <button
                 type="button"
                 onClick={() => {
@@ -1837,7 +1835,7 @@ export default function LevelUpApp() {
                 }}
                 className={`py-1.5 rounded-lg text-xs font-bold transition ${
                   !isSignUpMode
-                    ? 'bg-[#F5B041] text-[#0A0D14] shadow-sm'
+                    ? 'bg-[#F5B041] text-[#080A0F] shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -1851,7 +1849,7 @@ export default function LevelUpApp() {
                 }}
                 className={`py-1.5 rounded-lg text-xs font-bold transition ${
                   isSignUpMode
-                    ? 'bg-[#F5B041] text-[#0A0D14] shadow-sm'
+                    ? 'bg-[#F5B041] text-[#080A0F] shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -1881,7 +1879,7 @@ export default function LevelUpApp() {
                     placeholder="hunter@levelup.app"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#0A0D14] border border-[#1E2638] text-white text-xs focus:outline-none focus:border-[#F5B041]"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#080A0F] border border-white/10 text-white text-xs focus:outline-none focus:border-[#F5B041]"
                   />
                 </div>
               </div>
@@ -1898,41 +1896,37 @@ export default function LevelUpApp() {
                     placeholder="••••••••"
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#0A0D14] border border-[#1E2638] text-white text-xs focus:outline-none focus:border-[#F5B041]"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#080A0F] border border-white/10 text-white text-xs focus:outline-none focus:border-[#F5B041]"
                   />
                 </div>
               </div>
 
-              <button
+              <Button
                 type="submit"
-                disabled={authLoading}
-                className="w-full py-2.5 rounded-xl bg-[#F5B041] hover:bg-[#e5a031] text-[#0A0D14] font-black text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-1.5 transition active:scale-95 disabled:opacity-50"
+                variant="primary"
+                size="md"
+                loading={authLoading}
+                className="w-full uppercase tracking-wider"
+                icon={<ArrowRight className="w-3.5 h-3.5 stroke-[3]" />}
               >
-                {authLoading ? (
-                  <div className="w-4 h-4 border-2 border-[#0A0D14] border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <span>{isSignUpMode ? 'Initialize Hunter Account' : 'Enter the System'}</span>
-                    <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
-                  </>
-                )}
-              </button>
+                {isSignUpMode ? 'Initialize Hunter Account' : 'Enter the System'}
+              </Button>
             </form>
 
             {/* Google Gateway */}
             <div className="relative flex py-1 items-center">
-              <div className="flex-grow border-t border-[#1E2638]" />
+              <div className="flex-grow border-t border-white/10" />
               <span className="flex-shrink mx-2 text-[10px] font-bold uppercase text-slate-500 tracking-wider">
                 OR PROTOCOL
               </span>
-              <div className="flex-grow border-t border-[#1E2638]" />
+              <div className="flex-grow border-t border-white/10" />
             </div>
 
             <button
               type="button"
               onClick={handleGoogleSignIn}
               disabled={authLoading}
-              className="w-full py-2.5 rounded-xl bg-[#0A0D14] hover:bg-[#1E2638] border border-[#1E2638] text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 disabled:opacity-50"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -1954,7 +1948,7 @@ export default function LevelUpApp() {
               </svg>
               <span>Continue with Google</span>
             </button>
-          </div>
+          </Card>
 
           {/* Offline / Local Testing Bypass */}
           <div className="text-center pt-1">
@@ -1976,10 +1970,10 @@ export default function LevelUpApp() {
   // ----------------------------------------------------
   if (currentScreen === 'character_setup') {
     return (
-      <div className="min-h-screen bg-[#0A0D14] text-slate-100 flex flex-col items-center justify-center p-4 relative selection:bg-[#F5B041]/30">
+      <div className="min-h-screen bg-[#080A0F] text-slate-100 flex flex-col items-center justify-center p-4 relative selection:bg-[#F5B041]/30">
         <div className="w-full max-w-sm flex flex-col space-y-4 animate-in fade-in duration-300">
           <div className="text-center space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#121722] border border-[#1E2638] text-[10px] font-black tracking-widest uppercase text-[#3B82F6]">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E121B] border border-white/10 text-[10px] font-black tracking-widest uppercase text-[#3B82F6]">
               <ShieldCheck className="w-3 h-3 text-[#3B82F6]" />
               <span>NEW OPERATIVE REGISTRATION</span>
             </div>
@@ -1990,7 +1984,7 @@ export default function LevelUpApp() {
             </p>
           </div>
 
-          <form onSubmit={handleCharacterAwaken} className="p-5 rounded-2xl bg-[#121722] border border-[#1E2638] shadow-xl space-y-4">
+          <form onSubmit={handleCharacterAwaken} className="p-5 rounded-2xl bg-[#0E121B] border border-white/10 shadow-xl space-y-4">
             {/* Error Message */}
             {setupError && (
               <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start gap-2">
@@ -2005,7 +1999,7 @@ export default function LevelUpApp() {
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Hunter Name / Username
                 </label>
-                <span className="text-[10px] text-slate-500">{hunterName.length}/15</span>
+                <span className="text-[10px] text-slate-500 font-stat">{hunterName.length}/15</span>
               </div>
               <input
                 type="text"
@@ -2014,7 +2008,7 @@ export default function LevelUpApp() {
                 placeholder="e.g. Valkyrie, IronClad, Phoenix..."
                 value={hunterName}
                 onChange={(e) => setHunterName(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0D14] border border-[#1E2638] text-white text-xs font-bold focus:outline-none focus:border-[#F5B041]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#080A0F] border border-white/10 text-white text-xs font-bold focus:outline-none focus:border-[#F5B041]"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">
                 3–15 characters (letters, numbers, underscores)
@@ -2036,8 +2030,8 @@ export default function LevelUpApp() {
                       onClick={() => setSelectedAvatarIdx(idx)}
                       className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition active:scale-95 ${
                         isSelected
-                          ? 'bg-[#0A0D14] border-[#F5B041] shadow-sm shadow-[#F5B041]/10'
-                          : 'bg-[#0A0D14]/60 border-[#1E2638] opacity-75 hover:opacity-100'
+                          ? 'bg-[#080A0F] border-[#F5B041] shadow-sm shadow-[#F5B041]/10'
+                          : 'bg-[#080A0F]/60 border-white/10 opacity-75 hover:opacity-100'
                       }`}
                     >
                       <div className="text-2xl shrink-0">{av.icon}</div>
@@ -2054,20 +2048,17 @@ export default function LevelUpApp() {
             </div>
 
             {/* Primary Gold CTA Button */}
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="lg"
+              loading={setupLoading}
               disabled={setupLoading || hunterName.trim().length < 3}
-              className="w-full py-3 rounded-xl bg-[#F5B041] hover:bg-[#e5a031] text-[#0A0D14] font-black text-xs uppercase tracking-wider shadow-md shadow-[#F5B041]/20 flex items-center justify-center gap-1.5 transition active:scale-95 disabled:opacity-50"
+              className="w-full uppercase tracking-wider"
+              icon={<Sparkles className="w-4 h-4 stroke-[2.5]" />}
             >
-              {setupLoading ? (
-                <div className="w-4 h-4 border-2 border-[#0A0D14] border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 stroke-[2.5]" />
-                  <span>Awaken & Start Quests</span>
-                </>
-              )}
-            </button>
+              Awaken & Start Quests
+            </Button>
           </form>
         </div>
       </div>
@@ -2078,12 +2069,12 @@ export default function LevelUpApp() {
   // RENDER: 4. Main App (Quests, Leaderboard, Shop, Profile)
   // ----------------------------------------------------
   return (
-    <div className="min-h-screen bg-[#0A0D14] text-slate-100 flex flex-col items-center justify-start relative selection:bg-[#F5B041]/30 selection:text-[#F5B041]">
+    <div className="min-h-screen bg-[#080A0F] text-slate-100 flex flex-col items-center justify-start relative selection:bg-[#F5B041]/30 selection:text-[#F5B041]">
       {/* Floating XP / Gold Particles */}
       {particles.map((p) => (
         <div
           key={p.id}
-          className="fixed pointer-events-none z-50 text-sm font-black tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-float-xp"
+          className="fixed pointer-events-none z-50 text-sm font-black tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-float-xp font-stat"
           style={{ left: `${p.x - 25}px`, top: `${p.y - 20}px`, color: p.color }}
         >
           {p.text}
@@ -2092,64 +2083,30 @@ export default function LevelUpApp() {
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#121722]/95 border border-[#1E2638] text-slate-100 px-4 py-2 rounded-full shadow-2xl backdrop-blur-md animate-level-burst text-xs font-semibold">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#0E121B]/95 border border-white/10 text-slate-100 px-4 py-2 rounded-full shadow-2xl backdrop-blur-md animate-level-burst text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5 text-[#F5B041] shrink-0" />
           <span className="break-words">{toastMessage}</span>
         </div>
       )}
 
       {/* Smartphone Container Viewport */}
-      <div className="w-full max-w-md min-h-screen bg-[#0A0D14] flex flex-col relative pb-20">
+      <div className="w-full max-w-md min-h-screen bg-[#080A0F] flex flex-col relative pb-20">
         {/* ======================================================== */}
-        {/* TOP STATUS HUD (Compact, Single-Line, Quests Tab Only)    */}
+        {/* PERSISTENT TOP STATUS HUD (Active Across All Tabs)       */}
         {/* ======================================================== */}
-        {activeTab === 'quests' && (
-          <header className="sticky top-0 z-40 bg-[#0A0D14]/95 backdrop-blur-md border-b border-[#1E2638] px-4 py-2.5">
-            <div className="flex items-center justify-between gap-3">
-              {/* Left: Avatar + Username + Lv + Sleek thin XP Progress Bar */}
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div className="relative shrink-0">
-                  <div className="w-9 h-9 rounded-xl bg-[#121722] border border-[#1E2638] flex items-center justify-center text-lg shadow-sm">
-                    {player.avatar}
-                  </div>
-                  <span className="absolute -bottom-1 -right-1 px-1 py-0.2 rounded bg-[#F5B041] text-[#0A0D14] text-[9px] font-black leading-tight shadow-sm">
-                    {player.level}
-                  </span>
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 leading-tight">
-                    <span className="text-xs font-bold text-slate-100 break-words leading-tight">{player.name}</span>
-                    <span className="text-[10px] text-slate-400 font-semibold shrink-0">Lv.{player.level}</span>
-                    {player.isPro && (
-                      <Crown className="w-3 h-3 text-[#F5B041] shrink-0" />
-                    )}
-                  </div>
-                  {/* Sleek Thin XP Progress Bar */}
-                  <div className="w-full max-w-[130px] h-1.5 bg-[#121722] border border-[#1E2638] rounded-full overflow-hidden mt-1">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#3B82F6] to-[#F5B041] rounded-full transition-all duration-300"
-                      style={{ width: `${xpPercentage}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Streak Count (🔥 Xd) + Gold Balance */}
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#121722] border border-[#1E2638] text-[#F5B041] text-xs font-bold shadow-sm">
-                  <Flame className="w-3.5 h-3.5 fill-[#F5B041]" />
-                  <span>{player.streakDays}d</span>
-                </div>
-
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#121722] border border-[#1E2638] text-[#F5B041] text-xs font-bold shadow-sm">
-                  <span className="text-sm">🪙</span>
-                  <span>{player.gold}</span>
-                </div>
-              </div>
-            </div>
-          </header>
-        )}
+        <TopBar
+          playerName={player.name}
+          avatarIcon={player.avatar}
+          classTitle={player.classTitle}
+          level={player.level}
+          currentXP={player.currentXP}
+          gold={player.gold}
+          streakDays={player.streakDays}
+          onOpenSettings={() => {
+            triggerHaptic('light');
+            setIsSettingsModal(true);
+          }}
+        />
 
         {/* ======================================================== */}
         {/* MAIN CONTENT AREA                                        */}
@@ -2161,23 +2118,25 @@ export default function LevelUpApp() {
           {activeTab === 'quests' && (
             <div className="space-y-3.5">
               {/* Minimalist Horizontal 7-Day Calendar Strip */}
-              <div className="bg-[#121722] border border-[#1E2638] rounded-2xl p-2.5 shadow-sm">
-                <div className="flex items-center justify-between mb-2 px-1">
+              <Card variant="base" padding="sm" className="space-y-2">
+                <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
                     <Calendar className="w-3.5 h-3.5 text-[#F5B041]" />
-                    <span>
+                    <span className="font-stat">
                       {weekDays[0].monthShort} {weekDays[0].dayNumber} – {weekDays[6].dayNumber}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
+                      type="button"
                       onClick={() => setWeekOffset((o) => o - 1)}
-                      className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-[#1E2638] transition"
+                      className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
                     {weekOffset !== 0 && (
                       <button
+                        type="button"
                         onClick={() => setWeekOffset(0)}
                         className="text-[10px] px-2 py-0.5 rounded bg-[#F5B041]/10 text-[#F5B041] border border-[#F5B041]/20 font-bold"
                       >
@@ -2185,10 +2144,11 @@ export default function LevelUpApp() {
                       </button>
                     )}
                     <button
+                      type="button"
                       onClick={() => setWeekOffset((o) => Math.min(0, o + 1))}
                       disabled={weekOffset === 0}
                       className={`p-1 rounded-lg transition ${
-                        weekOffset === 0 ? 'text-slate-700' : 'text-slate-400 hover:text-white hover:bg-[#1E2638]'
+                        weekOffset === 0 ? 'text-slate-700' : 'text-slate-400 hover:text-white hover:bg-white/5'
                       }`}
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -2208,11 +2168,11 @@ export default function LevelUpApp() {
                         className={`flex flex-col items-center py-2 px-1 rounded-xl text-center transition ${
                           day.isToday
                             ? 'bg-[#F5B041]/10 border border-[#F5B041]/40 text-[#F5B041]'
-                            : 'bg-[#0A0D14]/70 border border-[#1E2638]/70 text-slate-400'
+                            : 'bg-[#080A0F]/60 border border-white/[0.06] text-slate-400'
                         }`}
                       >
                         <span className="text-[9px] uppercase font-bold tracking-wider">{day.dayShort}</span>
-                        <span className={`text-xs font-black mt-0.5 ${day.isToday ? 'text-[#F5B041]' : 'text-slate-200'}`}>
+                        <span className={`text-xs font-black font-stat mt-0.5 ${day.isToday ? 'text-[#F5B041]' : 'text-slate-200'}`}>
                           {day.dayNumber}
                         </span>
                         <div className="mt-1 flex items-center justify-center">
@@ -2228,48 +2188,55 @@ export default function LevelUpApp() {
                     );
                   })}
                 </div>
-              </div>
+              </Card>
 
               {/* Slot Indicator & Quick Surge Action */}
               <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                     Daily Quests
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#121722] text-[#F5B041] border border-[#1E2638] font-bold">
-                    {habits.length}/{MAX_FREE_HABITS} Active Quest Slots
-                  </span>
+                  <Badge variant="gold" size="sm" className="font-stat">
+                    {habits.length}/{MAX_FREE_HABITS} Slots
+                  </Badge>
                 </div>
 
                 {habits.length > 0 && (
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={<Zap className="w-3 h-3 text-[#F5B041]" />}
                     onClick={handleMarkAllToday}
-                    className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#121722] hover:bg-[#1E2638] text-slate-300 border border-[#1E2638] flex items-center gap-1 active:scale-95 transition"
                     title="Mark all habits completed for today"
                   >
-                    <Zap className="w-3 h-3 text-[#F5B041]" />
-                    <span>Complete All</span>
-                  </button>
+                    Complete All
+                  </Button>
                 )}
               </div>
 
               {/* Habit Checklist Cards directly following Calendar */}
               <div className="space-y-2">
                 {habits.length === 0 ? (
-                  <div className="py-8 px-4 rounded-2xl bg-[#121722] border border-[#1E2638] text-center space-y-4 shadow-sm">
-                    <div className="w-12 h-12 rounded-2xl bg-[#0A0D14] border border-[#1E2638] flex items-center justify-center mx-auto text-2xl text-[#F5B041]">
-                      ⚔️
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-white">Your Quest Book is Ready!</h3>
-                      <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-                        Tap the <span className="text-[#F5B041] font-bold">+ button</span> or 1-tap enlist recommended student starter quests below to start leveling up.
-                      </p>
-                    </div>
+                  <div className="space-y-3">
+                    <EmptyState
+                      icon={<Sword className="w-6 h-6 text-[#F5B041]" />}
+                      title="Your Quest Book is Ready"
+                      description="Enlist daily habit quests to earn XP, maintain your streak, and level up your hunter rank."
+                      action={
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={<Plus className="w-4 h-4" />}
+                          onClick={() => setIsAddQuestModal(true)}
+                        >
+                          Enlist Custom Quest
+                        </Button>
+                      }
+                    />
 
                     {/* 1-Tap Quick-Add Starter Quests */}
                     {STARTER_QUESTS.filter((sq) => !habits.some((h) => h.name.toLowerCase() === sq.name.toLowerCase())).length > 0 && (
-                      <div className="pt-3 text-left space-y-2 border-t border-[#1E2638]/70">
+                      <Card variant="base" padding="sm" className="space-y-2">
                         <div className="flex items-center justify-between px-1">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5B041] flex items-center gap-1">
                             <Sparkles className="w-3 h-3 text-[#F5B041]" />
@@ -2278,13 +2245,13 @@ export default function LevelUpApp() {
                           <span className="text-[10px] text-slate-500 font-semibold">1-Tap Enlist</span>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-2">
+                        <div className="grid grid-cols-1 gap-1.5">
                           {STARTER_QUESTS.filter((sq) => !habits.some((h) => h.name.toLowerCase() === sq.name.toLowerCase())).map((sq) => (
                             <button
                               key={sq.name}
                               type="button"
                               onClick={() => handleAddStarterQuest(sq)}
-                              className="p-2.5 rounded-xl bg-[#0A0D14] hover:bg-[#161D2B] border border-[#1E2638] hover:border-[#F5B041]/40 text-left flex items-center justify-between gap-3 transition active:scale-98 group"
+                              className="p-2.5 rounded-xl bg-[#080A0F]/80 hover:bg-[#151A26] border border-white/[0.06] hover:border-[#F5B041]/40 text-left flex items-center justify-between gap-3 transition active:scale-[0.99] group"
                             >
                               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 <span className="text-xl shrink-0">{sq.icon}</span>
@@ -2293,21 +2260,23 @@ export default function LevelUpApp() {
                                     {sq.name}
                                   </div>
                                   <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                                    <span className="capitalize text-slate-400 font-medium">{sq.difficulty}</span>
+                                    <Badge difficulty={sq.difficulty} size="sm">
+                                      {sq.difficulty}
+                                    </Badge>
                                     <span>•</span>
-                                    <span className="text-[#3B82F6] font-semibold">+{sq.xpReward} XP</span>
+                                    <span className="text-[#3B82F6] font-semibold font-stat">+{sq.xpReward} XP</span>
                                     <span>•</span>
-                                    <span className="text-[#F5B041] font-semibold">+{sq.goldReward}g</span>
+                                    <span className="text-[#F5B041] font-semibold font-stat">+{sq.goldReward}g</span>
                                   </div>
                                 </div>
                               </div>
-                              <div className="w-7 h-7 rounded-lg bg-[#121722] border border-[#1E2638] flex items-center justify-center text-[#F5B041] shrink-0 group-hover:bg-[#F5B041] group-hover:text-[#0A0D14] transition shadow-sm">
+                              <div className="w-7 h-7 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-[#F5B041] shrink-0 group-hover:bg-[#F5B041] group-hover:text-[#080A0F] transition shadow-sm">
                                 <Plus className="w-4 h-4 stroke-[2.5]" />
                               </div>
                             </button>
                           ))}
                         </div>
-                      </div>
+                      </Card>
                     )}
                   </div>
                 ) : (
@@ -2315,23 +2284,26 @@ export default function LevelUpApp() {
                     const isDoneToday = habit.completedDates.includes(todayKey);
 
                     return (
-                      <div
+                      <Card
                         key={habit.id}
-                        className={`rounded-2xl border transition-all duration-200 ${
+                        variant={isDoneToday ? 'base' : 'interactive'}
+                        padding="none"
+                        className={`transition-all duration-200 ${
                           isDoneToday
-                            ? 'bg-[#121722]/60 border-emerald-500/30 shadow-sm'
-                            : 'bg-[#121722] border-[#1E2638] hover:border-[#3B82F6]/30'
+                            ? 'bg-[#0E121B]/60 border-emerald-500/25'
+                            : 'border-white/[0.08]'
                         }`}
                       >
                         <div className="p-3 flex items-center justify-between gap-3">
                           {/* Checkbox Button */}
                           <div className="flex items-center gap-3 min-w-0 flex-1">
                             <button
+                              type="button"
                               onClick={(e) => handleToggleHabit(habit.id, todayKey, e)}
                               className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all active:scale-90 ${
                                 isDoneToday
                                   ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                                  : 'bg-[#0A0D14] border-[#1E2638] text-slate-600 hover:border-slate-600'
+                                  : 'bg-[#080A0F] border-white/10 text-slate-600 hover:border-slate-500'
                               }`}
                             >
                               {isDoneToday ? (
@@ -2351,15 +2323,15 @@ export default function LevelUpApp() {
                               </span>
 
                               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <span className="text-[10px] font-bold text-[#3B82F6] flex items-center gap-0.5">
+                                <span className="text-[10px] font-bold text-[#3B82F6] flex items-center gap-0.5 font-stat">
                                   <Sparkles className="w-2.5 h-2.5" /> +{habit.xpReward} XP
                                 </span>
-                                <span className="text-[10px] font-semibold text-[#F5B041]">
+                                <span className="text-[10px] font-semibold text-[#F5B041] font-stat">
                                   +{habit.goldReward}g
                                 </span>
-                                <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#0A0D14] border border-[#1E2638] text-slate-400">
+                                <Badge difficulty={habit.difficulty} size="sm">
                                   {habit.difficulty}
-                                </span>
+                                </Badge>
                               </div>
                             </div>
                           </div>
@@ -2367,8 +2339,9 @@ export default function LevelUpApp() {
                           <div className="flex items-center gap-1 shrink-0">
                             {/* Edit Quest */}
                             <button
+                              type="button"
                               onClick={() => handleOpenEditQuest(habit)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-[#F5B041] hover:bg-[#F5B041]/10 transition"
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-[#F5B041] hover:bg-white/5 transition"
                               title="Edit Quest"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -2376,6 +2349,7 @@ export default function LevelUpApp() {
 
                             {/* Delete Quest */}
                             <button
+                              type="button"
                               onClick={() => handleDeleteQuest(habit.id, habit.name)}
                               className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition"
                               title="Delete Quest"
@@ -2384,7 +2358,7 @@ export default function LevelUpApp() {
                             </button>
                           </div>
                         </div>
-                      </div>
+                      </Card>
                     );
                   })
                 )}
@@ -2408,17 +2382,18 @@ export default function LevelUpApp() {
                   </h2>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#121722] text-[#F5B041] border border-[#1E2638] flex items-center gap-1" title="Real-time live Firestore feed">
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#151A26] text-[#F5B041] border border-white/10 flex items-center gap-1.5" title="Real-time live Firestore feed">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     Live Feed
                   </span>
                   <button
+                    type="button"
                     onClick={() => {
                       fetchLiveLeaderboard(true);
                       showToast('Live leaderboard synced.');
                     }}
                     disabled={leaderboardLoading}
-                    className="p-1.5 rounded-lg bg-[#121722] border border-[#1E2638] text-slate-400 hover:text-white transition active:scale-95 disabled:opacity-50"
+                    className="p-1.5 rounded-lg bg-[#0E121B] border border-white/10 text-slate-400 hover:text-white transition active:scale-95 disabled:opacity-50"
                     title="Manual refresh"
                   >
                     <RotateCw className={`w-3.5 h-3.5 ${leaderboardLoading ? 'animate-spin text-[#F5B041]' : ''}`} />
@@ -2427,13 +2402,13 @@ export default function LevelUpApp() {
               </div>
 
               {/* 3-Tab Filter: All-Time Rank vs Today's Daily vs Top Streaks */}
-              <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#121722] border border-[#1E2638]">
+              <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#0E121B] border border-white/10">
                 <button
                   type="button"
                   onClick={() => setLeaderboardTab('all_time')}
                   className={`py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 ${
                     leaderboardTab === 'all_time'
-                      ? 'bg-[#F5B041] text-[#0A0D14] shadow-sm'
+                      ? 'bg-[#F5B041] text-[#080A0F] shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -2445,7 +2420,7 @@ export default function LevelUpApp() {
                   onClick={() => setLeaderboardTab('daily')}
                   className={`py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 ${
                     leaderboardTab === 'daily'
-                      ? 'bg-[#F5B041] text-[#0A0D14] shadow-sm'
+                      ? 'bg-[#F5B041] text-[#080A0F] shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -2457,7 +2432,7 @@ export default function LevelUpApp() {
                   onClick={() => setLeaderboardTab('streaks')}
                   className={`py-1.5 rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 ${
                     leaderboardTab === 'streaks'
-                      ? 'bg-[#F5B041] text-[#0A0D14] shadow-sm'
+                      ? 'bg-[#F5B041] text-[#080A0F] shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -2468,36 +2443,36 @@ export default function LevelUpApp() {
 
               {/* Live Countdown Banner for Today's Reset (12:00 AM Midnight) */}
               {leaderboardTab === 'daily' && (
-                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#121722] to-[#121722] border border-[#F5B041]/30 text-xs">
+                <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-amber-500/10 border border-[#F5B041]/30 text-xs">
                   <div className="flex items-center gap-2 text-slate-300 font-semibold">
                     <Clock className="w-3.5 h-3.5 text-[#F5B041] animate-pulse" />
                     <span className="text-[11px]">Today's Reset (12:00 AM Midnight):</span>
                   </div>
-                  <span className="font-mono font-black text-[#F5B041] tracking-wider text-xs">
+                  <span className="font-stat font-black text-[#F5B041] tracking-wider text-xs">
                     {formatTimeUntilMidnight(secondsUntilMidnight)}
                   </span>
                 </div>
               )}
 
               {/* Pinned User Rank Card (Always pinned using already-loaded profile data: 0 extra reads) */}
-              <div className="p-3 rounded-2xl bg-gradient-to-r from-[#121722] via-[#121722] to-[#121722] border-2 border-[#F5B041] flex items-center justify-between shadow-md shadow-[#F5B041]/10">
+              <Card variant="accent" padding="sm" className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="flex flex-col items-center justify-center w-8 shrink-0">
                     <span className="text-[10px] uppercase font-bold text-slate-400">Rank</span>
-                    <span className="text-xs font-black text-[#F5B041]">#{userRank ?? 1}</span>
+                    <span className="text-xs font-black font-stat text-[#F5B041]">#{userRank ?? 1}</span>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-[#0A0D14] flex items-center justify-center text-xl border border-[#F5B041] shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#080A0F] flex items-center justify-center text-xl border border-[#F5B041]/40 shrink-0">
                     {player.avatar}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-bold text-white flex items-center gap-1">
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
                       <span className="break-words leading-tight">{player.name || 'Your Hunter'}</span>
                       <span className="text-[10px] px-1 py-0.2 rounded bg-[#F5B041]/20 text-[#F5B041] font-black">
                         YOU
                       </span>
                       {player.isPro && <Crown className="w-3.5 h-3.5 text-[#F5B041] shrink-0" />}
                     </div>
-                    <div className="text-[10px] text-slate-400 font-medium">
+                    <div className="text-[10px] text-slate-400 font-medium font-stat">
                       Lv.{player.level} • {
                         leaderboardTab === 'all_time'
                           ? `${player.totalXP.toLocaleString()} XP`
@@ -2509,7 +2484,7 @@ export default function LevelUpApp() {
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="text-xs font-black text-[#F5B041]">
+                  <span className="text-xs font-black font-stat text-[#F5B041]">
                     {leaderboardTab === 'all_time'
                       ? `${player.totalXP.toLocaleString()} XP`
                       : leaderboardTab === 'daily'
@@ -2517,39 +2492,37 @@ export default function LevelUpApp() {
                       : `🔥 ${player.streakDays}d`}
                   </span>
                 </div>
-              </div>
+              </Card>
 
               {/* Loading Skeleton State */}
               {leaderboardLoading ? (
                 <div className="space-y-2">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <div
+                    <Card
                       key={i}
-                      className="p-3 rounded-2xl bg-[#121722] border border-[#1E2638] flex items-center justify-between animate-pulse"
+                      variant="base"
+                      padding="sm"
+                      className="flex items-center justify-between animate-pulse"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-6 h-4 bg-[#1E2638] rounded" />
-                        <div className="w-10 h-10 bg-[#1E2638] rounded-xl" />
+                        <div className="w-6 h-4 bg-white/10 rounded" />
+                        <div className="w-10 h-10 bg-white/10 rounded-xl" />
                         <div className="space-y-1.5">
-                          <div className="w-24 h-3 bg-[#1E2638] rounded" />
-                          <div className="w-16 h-2.5 bg-[#1E2638] rounded" />
+                          <div className="w-24 h-3 bg-white/10 rounded" />
+                          <div className="w-16 h-2.5 bg-white/10 rounded" />
                         </div>
                       </div>
-                      <div className="w-14 h-4 bg-[#1E2638] rounded" />
-                    </div>
+                      <div className="w-14 h-4 bg-white/10 rounded" />
+                    </Card>
                   ))}
                 </div>
               ) : leaderboardData.length === 0 ? (
                 /* Empty State */
-                <div className="py-12 px-6 rounded-2xl bg-[#121722] border border-[#1E2638] text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-[#0A0D14] border border-[#1E2638] flex items-center justify-center mx-auto mb-3 text-2xl text-[#F5B041]">
-                    🏆
-                  </div>
-                  <h3 className="text-sm font-bold text-white">Be The First on the Leaderboard</h3>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-                    Complete your daily habit quests to earn XP and claim the #1 Global Hunter rank!
-                  </p>
-                </div>
+                <EmptyState
+                  icon={<Trophy className="w-6 h-6 text-[#F5B041]" />}
+                  title="Be The First on the Leaderboard"
+                  description="Complete your daily habit quests to earn XP and claim the #1 Global Hunter rank!"
+                />
               ) : (
                 /* Live Firestore Players List with Top-3 Podium Accents */
                 <div className="space-y-2">
@@ -2560,40 +2533,35 @@ export default function LevelUpApp() {
                     const isRank3 = rankNum === 3;
                     const isCurrentUser = operative.uid === currentUserId || (player.name && operative.username?.toLowerCase() === player.name?.toLowerCase());
 
-                    // Podium border & background accents
-                    let cardBorder = 'border-[#1E2638]';
-                    let cardBg = 'bg-[#121722]';
+                    let podiumClass = 'border-white/[0.08] bg-[#0E121B]';
                     let rankBadge = (
-                      <span className="text-xs font-bold text-slate-500 w-6 text-center shrink-0">
+                      <span className="text-xs font-bold font-stat text-slate-500 w-6 text-center shrink-0">
                         #{rankNum}
                       </span>
                     );
 
                     if (isRank1) {
-                      cardBorder = 'border-amber-400/50 shadow-md shadow-amber-500/10';
-                      cardBg = 'bg-gradient-to-r from-amber-500/15 via-[#121722] to-[#121722]';
+                      podiumClass = 'border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-[#0E121B] to-[#0E121B] shadow-sm shadow-amber-500/10';
                       rankBadge = (
                         <div className="flex flex-col items-center justify-center w-6 shrink-0">
                           <Crown className="w-3.5 h-3.5 text-[#F5B041]" />
-                          <span className="text-xs font-black text-[#F5B041]">#1</span>
+                          <span className="text-xs font-black font-stat text-[#F5B041]">#1</span>
                         </div>
                       );
                     } else if (isRank2) {
-                      cardBorder = 'border-slate-300/40';
-                      cardBg = 'bg-gradient-to-r from-slate-300/10 via-[#121722] to-[#121722]';
+                      podiumClass = 'border-slate-300/30 bg-gradient-to-r from-slate-300/10 via-[#0E121B] to-[#0E121B]';
                       rankBadge = (
                         <div className="flex flex-col items-center justify-center w-6 shrink-0">
                           <Medal className="w-3.5 h-3.5 text-slate-300" />
-                          <span className="text-xs font-black text-slate-300">#2</span>
+                          <span className="text-xs font-black font-stat text-slate-300">#2</span>
                         </div>
                       );
                     } else if (isRank3) {
-                      cardBorder = 'border-amber-700/40';
-                      cardBg = 'bg-gradient-to-r from-amber-700/10 via-[#121722] to-[#121722]';
+                      podiumClass = 'border-amber-700/30 bg-gradient-to-r from-amber-700/10 via-[#0E121B] to-[#0E121B]';
                       rankBadge = (
                         <div className="flex flex-col items-center justify-center w-6 shrink-0">
                           <Medal className="w-3.5 h-3.5 text-amber-600" />
-                          <span className="text-xs font-black text-amber-500">#3</span>
+                          <span className="text-xs font-black font-stat text-amber-500">#3</span>
                         </div>
                       );
                     }
@@ -2603,11 +2571,11 @@ export default function LevelUpApp() {
                     return (
                       <div
                         key={operative.uid || idx}
-                        className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${cardBg} ${cardBorder}`}
+                        className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${podiumClass}`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           {rankBadge}
-                          <div className="w-9 h-9 rounded-xl bg-[#0A0D14] flex items-center justify-center text-lg border border-[#1E2638] shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-[#080A0F] flex items-center justify-center text-lg border border-white/10 shrink-0">
                             {getAvatarIcon(operative.avatar_id)}
                           </div>
                           <div className="min-w-0">
@@ -2622,14 +2590,14 @@ export default function LevelUpApp() {
                                 <Crown className="w-3 h-3 text-[#F5B041] shrink-0" />
                               )}
                             </div>
-                            <div className="text-[10px] text-slate-400">
+                            <div className="text-[10px] text-slate-400 font-stat">
                               Lv.{operative.level || 1}
                             </div>
                           </div>
                         </div>
 
                         <div className="text-right shrink-0">
-                          <span className={`text-xs font-black ${isRank1 ? 'text-[#F5B041]' : isRank2 ? 'text-slate-300' : isRank3 ? 'text-amber-500' : 'text-slate-300'}`}>
+                          <span className={`text-xs font-black font-stat ${isRank1 ? 'text-[#F5B041]' : isRank2 ? 'text-slate-300' : isRank3 ? 'text-amber-500' : 'text-slate-300'}`}>
                             {leaderboardTab === 'all_time'
                               ? `${(operative.total_xp || 0).toLocaleString()} XP`
                               : leaderboardTab === 'daily'
@@ -2651,60 +2619,79 @@ export default function LevelUpApp() {
           {activeTab === 'shop' && (
             <div className="space-y-3.5">
               {/* Treasury Header */}
-              <div className="p-4 rounded-2xl bg-[#121722] border border-[#1E2638] flex items-center justify-between">
+              <Card variant="base" padding="md" className="flex items-center justify-between">
                 <div>
                   <div className="text-[10px] font-bold text-[#F5B041] uppercase tracking-wider">Gold Vault</div>
-                  <div className="text-2xl font-black text-white flex items-center gap-1.5 mt-0.5">
+                  <div className="text-2xl font-black font-stat text-white flex items-center gap-1.5 mt-0.5">
                     <span>🪙</span>
                     <span>{player.gold} Gold</span>
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={<Plus className="w-3.5 h-3.5 stroke-[3]" />}
                   onClick={() => setIsAddRewardModal(true)}
-                  className="px-3 py-2 rounded-xl bg-[#F5B041] hover:bg-[#e5a031] text-[#0A0D14] text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition"
                 >
-                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>Custom Loot</span>
-                </button>
-              </div>
+                  Custom Loot
+                </Button>
+              </Card>
 
               {/* Rewards List */}
               <div className="space-y-2">
-                {rewards.map((reward) => {
-                  const canAfford = player.gold >= reward.cost;
+                {rewards.length === 0 ? (
+                  <EmptyState
+                    icon={<Gift className="w-6 h-6 text-[#F5B041]" />}
+                    title="Vault Empty"
+                    description="Create custom real-life rewards you can purchase with your earned quest gold."
+                    action={
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        icon={<Plus className="w-3.5 h-3.5" />}
+                        onClick={() => setIsAddRewardModal(true)}
+                      >
+                        Add Custom Reward
+                      </Button>
+                    }
+                  />
+                ) : (
+                  rewards.map((reward) => {
+                    const canAfford = player.gold >= reward.cost;
 
-                  return (
-                    <div
-                      key={reward.id}
-                      className="p-3 rounded-2xl bg-[#121722] border border-[#1E2638] flex items-center justify-between gap-3 shadow-sm"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-[#0A0D14] border border-[#1E2638] flex items-center justify-center text-xl shrink-0">
-                          {reward.icon}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs font-bold text-white break-words">{reward.name}</div>
-                          <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
-                            <span className="text-[#F5B041] font-bold">🪙 {reward.cost} Gold</span>
-                            {reward.claimedCount > 0 && <span>• Claimed {reward.claimedCount}x</span>}
+                    return (
+                      <Card
+                        key={reward.id}
+                        variant="base"
+                        padding="sm"
+                        className="flex items-center justify-between gap-3 shadow-sm"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-[#080A0F] border border-white/10 flex items-center justify-center text-xl shrink-0">
+                            {reward.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-white break-words">{reward.name}</div>
+                            <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
+                              <span className="text-[#F5B041] font-bold font-stat">🪙 {reward.cost} Gold</span>
+                              {reward.claimedCount > 0 && <span className="font-stat">• Claimed {reward.claimedCount}x</span>}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <button
-                        onClick={() => handleClaimReward(reward)}
-                        disabled={!canAfford}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition shrink-0 ${
-                          canAfford
-                            ? 'bg-[#F5B041] hover:bg-[#e5a031] text-[#0A0D14]'
-                            : 'bg-[#0A0D14] text-slate-600 border border-[#1E2638] cursor-not-allowed'
-                        }`}
-                      >
-                        Claim
-                      </button>
-                    </div>
-                  );
-                })}
+                        <Button
+                          size="sm"
+                          variant={canAfford ? 'primary' : 'outline'}
+                          disabled={!canAfford}
+                          onClick={() => handleClaimReward(reward)}
+                          className={!canAfford ? 'opacity-40 cursor-not-allowed' : ''}
+                        >
+                          Claim
+                        </Button>
+                      </Card>
+                    );
+                  })
+                )}
               </div>
             </div>
           )}
@@ -2725,7 +2712,7 @@ export default function LevelUpApp() {
                     triggerHaptic('light');
                     setIsSettingsModal(true);
                   }}
-                  className="px-2.5 py-1.5 rounded-xl bg-[#121722] hover:bg-[#1E2638] border border-[#1E2638] text-slate-300 hover:text-[#F5B041] transition active:scale-95 flex items-center gap-1.5 shadow-sm"
+                  className="px-2.5 py-1.5 rounded-xl bg-[#0E121B] hover:bg-[#151A26] border border-white/10 text-slate-300 hover:text-[#F5B041] transition active:scale-95 flex items-center gap-1.5 shadow-sm"
                   title="Settings & System Configuration"
                 >
                   <Settings className="w-3.5 h-3.5" />
@@ -2734,34 +2721,33 @@ export default function LevelUpApp() {
               </div>
 
               {/* Profile Card */}
-              <div className="p-4 rounded-2xl bg-[#121722] border border-[#1E2638] text-center shadow-sm">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-[#0A0D14] border-2 border-[#F5B041] flex items-center justify-center text-3xl shadow-md mb-2">
+              <Card variant="base" padding="md" className="text-center shadow-sm">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-[#080A0F] border-2 border-[#F5B041] flex items-center justify-center text-3xl shadow-md mb-2">
                   {player.avatar}
                 </div>
                 <h2 className="text-base font-black text-white break-words">{player.name}</h2>
-                <div className="text-xs text-[#F5B041] font-bold mt-0.5">
+                <div className="text-xs text-[#F5B041] font-bold mt-0.5 font-stat">
                   Level {player.level} • {player.classTitle}
                 </div>
 
                 {/* Level / XP Progress Bar */}
-                <div className="mt-3 px-2">
-                  <div className="flex justify-between text-[10px] text-slate-400 font-medium mb-1">
-                    <span>XP Progress</span>
-                    <span>{player.currentXP} / {xpNeeded} XP ({xpPercentage}%)</span>
-                  </div>
-                  <div className="w-full h-2 bg-[#0A0D14] border border-[#1E2638] rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#3B82F6] to-[#F5B041] rounded-full transition-all duration-300"
-                      style={{ width: `${xpPercentage}%` }}
-                    />
-                  </div>
+                <div className="mt-3.5 px-1">
+                  <ProgressBar
+                    value={player.currentXP}
+                    max={xpNeeded}
+                    color="gold"
+                    height="md"
+                    label={`XP: ${player.currentXP.toLocaleString()} / ${xpNeeded.toLocaleString()}`}
+                    showPercent
+                  />
                 </div>
 
                 {/* Avatar Chooser */}
-                <div className="mt-3.5 flex items-center justify-center gap-1.5">
+                <div className="mt-4 flex items-center justify-center gap-1.5">
                   {AVATAR_OPTIONS.map((av) => (
                     <button
                       key={av.title}
+                      type="button"
                       onClick={() => {
                         setPlayer((prev) => ({
                           ...prev,
@@ -2778,39 +2764,39 @@ export default function LevelUpApp() {
                       className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm border transition ${
                         player.avatar === av.icon
                           ? 'bg-[#F5B041]/20 border-[#F5B041] scale-105'
-                          : 'bg-[#0A0D14] border-[#1E2638] text-slate-400'
+                          : 'bg-[#080A0F] border-white/10 text-slate-400'
                       }`}
                     >
                       {av.icon}
                     </button>
                   ))}
                 </div>
-              </div>
+              </Card>
 
               {/* 3 Clean Summary Stat Cards */}
               <div className="grid grid-cols-3 gap-2">
-                <div className="p-3 rounded-2xl bg-[#121722] border border-[#1E2638] text-center shadow-sm">
+                <Card variant="base" padding="sm" className="text-center shadow-sm">
                   <div className="text-base mb-1">🔥</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Streak</div>
-                  <div className="text-sm font-black text-[#F5B041] mt-0.5">{player.streakDays}d</div>
-                </div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Streak</div>
+                  <div className="text-sm font-black font-stat text-[#F5B041] mt-0.5">{player.streakDays}d</div>
+                </Card>
 
-                <div className="p-3 rounded-2xl bg-[#121722] border border-[#1E2638] text-center shadow-sm">
+                <Card variant="base" padding="sm" className="text-center shadow-sm">
                   <div className="text-base mb-1">⚡</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Quests</div>
-                  <div className="text-sm font-black text-[#3B82F6] mt-0.5">{totalCompletedCount}</div>
-                </div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quests</div>
+                  <div className="text-sm font-black font-stat text-[#3B82F6] mt-0.5">{totalCompletedCount}</div>
+                </Card>
 
-                <div className="p-3 rounded-2xl bg-[#121722] border border-[#1E2638] text-center shadow-sm">
+                <Card variant="base" padding="sm" className="text-center shadow-sm">
                   <div className="text-base mb-1">🏆</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Rank</div>
-                  <div className="text-sm font-black text-amber-300 mt-0.5">#{userRank ?? 1}</div>
-                </div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rank</div>
+                  <div className="text-sm font-black font-stat text-amber-300 mt-0.5">#{userRank ?? 1}</div>
+                </Card>
               </div>
 
               {/* Unlocked Badges Grid */}
-              <div className="p-3.5 rounded-2xl bg-[#121722] border border-[#1E2638] shadow-sm">
-                <div className="flex items-center justify-between mb-3">
+              <Card variant="base" padding="md" className="shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
                     <Award className="w-4 h-4 text-[#F5B041]" />
                     <span>Unlocked Badges ({(player.unlockedBadgeIds || []).length}/{BADGES_LIST.length})</span>
@@ -2825,8 +2811,8 @@ export default function LevelUpApp() {
                         key={b.id}
                         className={`p-2.5 rounded-xl border flex items-start gap-2.5 transition ${
                           isUnlocked
-                            ? 'bg-[#0A0D14] border-[#F5B041]/40'
-                            : 'bg-[#0A0D14]/40 border-[#1E2638] opacity-50'
+                            ? 'bg-[#080A0F] border-[#F5B041]/40'
+                            : 'bg-[#080A0F]/40 border-white/[0.06] opacity-50'
                         }`}
                       >
                         <div className="text-xl shrink-0 mt-0.5">{b.icon}</div>
@@ -2842,10 +2828,10 @@ export default function LevelUpApp() {
                     );
                   })}
                 </div>
-              </div>
+              </Card>
 
               {/* Level Up Pro (₹49/mo) Teaser Card (100% Free V1 Launch Ready) */}
-              <div className="p-4 rounded-2xl bg-[#121722] border border-[#1E2638] space-y-3 shadow-sm">
+              <Card variant="accent" padding="md" className="space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Crown className="w-4 h-4 text-[#F5B041]" />
@@ -2879,30 +2865,29 @@ export default function LevelUpApp() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  size="md"
+                  icon={<Bell className="w-3.5 h-3.5" />}
                   onClick={handleNotifyPro}
                   disabled={player.interestedInPro}
-                  className={`w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95 ${
-                    player.interestedInPro
-                      ? 'bg-[#1E2638] text-slate-400 cursor-default'
-                      : 'bg-[#F5B041] hover:bg-[#e5a031] text-[#0A0D14]'
-                  }`}
+                  className={`w-full ${player.interestedInPro ? 'bg-white/10 text-slate-400 border-white/10' : ''}`}
                 >
-                  <Bell className="w-3.5 h-3.5" />
-                  <span>{player.interestedInPro ? '✓ Notification Request Registered' : 'Notify Me on Launch'}</span>
-                </button>
-              </div>
+                  {player.interestedInPro ? '✓ Notification Request Registered' : 'Notify Me on Launch'}
+                </Button>
+              </Card>
 
               {/* Sign Out Action */}
               <div className="pt-1">
-                <button
+                <Button
+                  variant="danger"
+                  size="md"
+                  icon={<LogOut className="w-3.5 h-3.5" />}
                   onClick={handleSignOut}
-                  className="w-full py-2 rounded-xl bg-[#121722] hover:bg-[#1E2638] border border-[#1E2638] text-xs font-semibold text-red-400 hover:text-red-300 transition flex items-center justify-center gap-1.5"
+                  className="w-full"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Sign Out of Hunter Account</span>
-                </button>
+                  Sign Out of Hunter Account
+                </Button>
               </div>
             </div>
           )}
@@ -2913,280 +2898,228 @@ export default function LevelUpApp() {
         {/* ======================================================== */}
         {activeTab === 'quests' && (
           <button
+            type="button"
             onClick={() => setIsAddQuestModal(true)}
-            className="fixed bottom-20 right-5 z-40 w-12 h-12 rounded-2xl bg-[#F5B041] hover:bg-[#e5a031] text-[#0A0D14] flex items-center justify-center shadow-xl shadow-[#F5B041]/25 active:scale-95 transition-all"
+            className="fixed bottom-20 right-5 z-40 w-12 h-12 rounded-2xl bg-gradient-to-r from-[#F5B041] to-[#E59866] hover:brightness-105 text-[#080A0F] flex items-center justify-center shadow-xl shadow-[#F5B041]/25 active:scale-95 transition-all border border-[#F5B041]/50"
             title="Add Habit Quest"
+            aria-label="Add Habit Quest"
           >
             <Plus className="w-6 h-6 stroke-[3]" />
           </button>
         )}
 
         {/* ======================================================== */}
-        {/* SIMPLIFIED BOTTOM NAVIGATION BAR (4 TABS ONLY)           */}
+        {/* PERSISTENT MOBILE BOTTOM NAVIGATION                      */}
         {/* ======================================================== */}
-        <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0A0D14]/95 backdrop-blur-xl border-t border-[#1E2638] py-2 px-3 flex justify-center">
-          <div className="w-full max-w-md flex items-center justify-around">
-            <button
-              onClick={() => {
-                triggerHaptic('light');
-                setActiveTab('quests');
-              }}
-              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition active:scale-95 ${
-                activeTab === 'quests' ? 'text-[#F5B041] font-bold' : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="text-[10px]">Quests</span>
-            </button>
-
-            <button
-              onClick={() => {
-                triggerHaptic('light');
-                setActiveTab('leaderboard');
-              }}
-              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition active:scale-95 ${
-                activeTab === 'leaderboard' ? 'text-[#F5B041] font-bold' : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              <Trophy className="w-5 h-5" />
-              <span className="text-[10px]">Leaderboard</span>
-            </button>
-
-            <button
-              onClick={() => {
-                triggerHaptic('light');
-                setActiveTab('shop');
-              }}
-              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition active:scale-95 ${
-                activeTab === 'shop' ? 'text-[#F5B041] font-bold' : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              <ShoppingBag className="w-5 h-5" />
-              <span className="text-[10px]">Shop</span>
-            </button>
-
-            <button
-              onClick={() => {
-                triggerHaptic('light');
-                setActiveTab('profile');
-              }}
-              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition active:scale-95 ${
-                activeTab === 'profile' ? 'text-[#F5B041] font-bold' : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              <User className="w-5 h-5" />
-              <span className="text-[10px]">Profile</span>
-            </button>
-          </div>
-        </nav>
+        <BottomNav
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            triggerHaptic('light');
+            setActiveTab(tab);
+          }}
+        />
       </div>
 
       {/* ======================================================== */}
       {/* MODAL 1: ADD NEW QUEST                                   */}
       {/* ======================================================== */}
-      {isAddQuestModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#121722] border border-[#1E2638] rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 animate-in slide-in-from-bottom duration-200">
-            <div className="flex items-center justify-between border-b border-[#1E2638] pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-[#F5B041]/20 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041]">
-                  <Sword className="w-3.5 h-3.5" />
-                </div>
-                <h3 className="text-sm font-bold text-white">Create Daily Habit Quest</h3>
-              </div>
-              <button onClick={() => setIsAddQuestModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={isAddQuestModal}
+        onClose={() => setIsAddQuestModal(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-[#F5B041]/20 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041]">
+              <Sword className="w-3.5 h-3.5" />
             </div>
-
-            <form onSubmit={handleCreateQuest} className="space-y-3.5">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                  Quest Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Read 20 pages, 30m workout, meditate..."
-                  value={newQuestName}
-                  onChange={(e) => setNewQuestName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0D14] border border-[#1E2638] text-white text-xs focus:outline-none focus:border-[#F5B041]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                  Quest Icon
-                </label>
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                  {EMOJI_BANK.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setNewQuestIcon(emoji)}
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 border transition ${
-                        newQuestIcon === emoji
-                          ? 'bg-[#F5B041]/20 border-[#F5B041] scale-105'
-                          : 'bg-[#0A0D14] border-[#1E2638] hover:bg-[#1E2638]'
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Difficulty & Rewards
-                  </label>
-                  <span className="text-[10px] text-slate-500">
-                    {habits.length}/{MAX_FREE_HABITS} Slots Used
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['easy', 'medium', 'hard'] as Difficulty[]).map((diff) => {
-                    const cfg = DIFFICULTY_MAP[diff];
-                    return (
-                      <button
-                        key={diff}
-                        type="button"
-                        onClick={() => setNewQuestDifficulty(diff)}
-                        className={`py-2 px-1 rounded-xl text-[10px] font-bold uppercase border flex flex-col items-center justify-center transition ${
-                          newQuestDifficulty === diff
-                            ? 'bg-[#F5B041] text-[#0A0D14] border-[#F5B041]'
-                            : 'bg-[#0A0D14] border-[#1E2638] text-slate-400'
-                        }`}
-                      >
-                        <span className="capitalize">{diff}</span>
-                        <span className="text-[9px] opacity-80 mt-0.5">+{cfg.xp} XP • +{cfg.gold}g</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#1E2638]">
-                <button
-                  type="button"
-                  onClick={() => setIsAddQuestModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider text-[#0A0D14] bg-[#F5B041] hover:bg-[#e5a031] transition shadow-sm"
-                >
-                  Enlist Quest
-                </button>
-              </div>
-            </form>
+            <span>Create Daily Habit Quest</span>
           </div>
-        </div>
-      )}
+        }
+      >
+        <form onSubmit={handleCreateQuest} className="space-y-3.5">
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              Quest Title
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Read 20 pages, 30m workout, meditate..."
+              value={newQuestName}
+              onChange={(e) => setNewQuestName(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#080A0F] border border-white/10 text-white text-xs focus:outline-none focus:border-[#F5B041]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              Quest Icon
+            </label>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {EMOJI_BANK.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setNewQuestIcon(emoji)}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 border transition ${
+                    newQuestIcon === emoji
+                      ? 'bg-[#F5B041]/20 border-[#F5B041] scale-105'
+                      : 'bg-[#080A0F] border-white/10 hover:bg-white/5'
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Difficulty & Rewards
+              </label>
+              <span className="text-[10px] text-slate-500 font-stat">
+                {habits.length}/{MAX_FREE_HABITS} Slots Used
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {(['easy', 'medium', 'hard'] as Difficulty[]).map((diff) => {
+                const cfg = DIFFICULTY_MAP[diff];
+                return (
+                  <button
+                    key={diff}
+                    type="button"
+                    onClick={() => setNewQuestDifficulty(diff)}
+                    className={`py-2 px-1 rounded-xl text-[10px] font-bold uppercase border flex flex-col items-center justify-center transition ${
+                      newQuestDifficulty === diff
+                        ? 'bg-[#F5B041] text-[#080A0F] border-[#F5B041]'
+                        : 'bg-[#080A0F] border-white/10 text-slate-400'
+                    }`}
+                  >
+                    <span className="capitalize">{diff}</span>
+                    <span className="text-[9px] opacity-80 mt-0.5 font-stat">+{cfg.xp} XP • +{cfg.gold}g</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-white/[0.08]">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsAddQuestModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+            >
+              Enlist Quest
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* ======================================================== */}
       {/* MODAL: EDIT EXISTING QUEST                               */}
       {/* ======================================================== */}
-      {editingHabit && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#121722] border border-[#1E2638] rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 animate-in slide-in-from-bottom duration-200">
-            <div className="flex items-center justify-between border-b border-[#1E2638] pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-[#3B82F6]/20 border border-[#3B82F6]/30 flex items-center justify-center text-[#3B82F6]">
-                  <Pencil className="w-3.5 h-3.5" />
-                </div>
-                <h3 className="text-sm font-bold text-white">Edit Habit Quest</h3>
-              </div>
-              <button onClick={() => setEditingHabit(null)} className="p-1 rounded-lg text-slate-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={Boolean(editingHabit)}
+        onClose={() => setEditingHabit(null)}
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-[#3B82F6]/20 border border-[#3B82F6]/30 flex items-center justify-center text-[#3B82F6]">
+              <Pencil className="w-3.5 h-3.5" />
             </div>
-
-            <form onSubmit={handleUpdateQuest} className="space-y-3.5">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                  Quest Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={100}
-                  value={editQuestName}
-                  onChange={(e) => setEditQuestName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0D14] border border-[#1E2638] text-white text-xs focus:outline-none focus:border-[#F5B041]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                  Quest Icon
-                </label>
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                  {EMOJI_BANK.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setEditQuestIcon(emoji)}
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 border transition ${
-                        editQuestIcon === emoji
-                          ? 'bg-[#F5B041] border-[#F5B041] shadow-sm'
-                          : 'bg-[#0A0D14] border-[#1E2638] hover:border-slate-600'
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                  Difficulty & Rewards
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['easy', 'medium', 'hard'] as Difficulty[]).map((diff) => {
-                    const cfg = DIFFICULTY_MAP[diff];
-                    return (
-                      <button
-                        key={diff}
-                        type="button"
-                        onClick={() => setEditQuestDifficulty(diff)}
-                        className={`py-2 px-1 rounded-xl text-[10px] font-bold uppercase border flex flex-col items-center justify-center transition ${
-                          editQuestDifficulty === diff
-                            ? 'bg-[#F5B041] text-[#0A0D14] border-[#F5B041]'
-                            : 'bg-[#0A0D14] border-[#1E2638] text-slate-400'
-                        }`}
-                      >
-                        <span className="capitalize">{diff}</span>
-                        <span className="text-[9px] opacity-80 mt-0.5">+{cfg.xp} XP • +{cfg.gold}g</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#1E2638]">
-                <button
-                  type="button"
-                  onClick={() => setEditingHabit(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider text-[#0A0D14] bg-[#F5B041] hover:bg-[#e5a031] transition shadow-sm"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
+            <span>Edit Habit Quest</span>
           </div>
-        </div>
-      )}
+        }
+      >
+        <form onSubmit={handleUpdateQuest} className="space-y-3.5">
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              Quest Title
+            </label>
+            <input
+              type="text"
+              required
+              maxLength={100}
+              value={editQuestName}
+              onChange={(e) => setEditQuestName(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#080A0F] border border-white/10 text-white text-xs focus:outline-none focus:border-[#F5B041]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              Quest Icon
+            </label>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {EMOJI_BANK.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setEditQuestIcon(emoji)}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 border transition ${
+                    editQuestIcon === emoji
+                      ? 'bg-[#F5B041] border-[#F5B041] shadow-sm'
+                      : 'bg-[#080A0F] border-white/10 hover:border-slate-500'
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              Difficulty & Rewards
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['easy', 'medium', 'hard'] as Difficulty[]).map((diff) => {
+                const cfg = DIFFICULTY_MAP[diff];
+                return (
+                  <button
+                    key={diff}
+                    type="button"
+                    onClick={() => setEditQuestDifficulty(diff)}
+                    className={`py-2 px-1 rounded-xl text-[10px] font-bold uppercase border flex flex-col items-center justify-center transition ${
+                      editQuestDifficulty === diff
+                        ? 'bg-[#F5B041] text-[#080A0F] border-[#F5B041]'
+                        : 'bg-[#080A0F] border-white/10 text-slate-400'
+                    }`}
+                  >
+                    <span className="capitalize">{diff}</span>
+                    <span className="text-[9px] opacity-80 mt-0.5 font-stat">+{cfg.xp} XP • +{cfg.gold}g</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-white/[0.08]">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditingHabit(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+            >
+              Save Changes
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* ======================================================== */}
       {/* MODAL 2: LEVEL UP CELEBRATION                            */}
@@ -3226,348 +3159,349 @@ export default function LevelUpApp() {
       {/* ======================================================== */}
       {/* MODAL 3: CUSTOM REWARD MODAL                             */}
       {/* ======================================================== */}
-      {isAddRewardModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#121722] border border-[#1E2638] rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 animate-in slide-in-from-bottom">
-            <div className="flex items-center justify-between border-b border-[#1E2638] pb-3">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Gift className="w-4 h-4 text-[#F5B041]" />
-                <span>Create Custom Real-Life Reward</span>
-              </h3>
-              <button onClick={() => setIsAddRewardModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={isAddRewardModal}
+        onClose={() => setIsAddRewardModal(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-[#F5B041]/20 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041]">
+              <Gift className="w-3.5 h-3.5" />
+            </div>
+            <span>Create Custom Real-Life Reward</span>
+          </div>
+        }
+      >
+        <form onSubmit={handleAddCustomReward} className="space-y-3.5">
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              Reward Title
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. 1hr gaming, movie ticket, iced coffee..."
+              value={newRewardName}
+              onChange={(e) => setNewRewardName(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#080A0F] border border-white/10 text-white text-xs focus:outline-none focus:border-[#F5B041]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                Icon
+              </label>
+              <select
+                value={newRewardIcon}
+                onChange={(e) => setNewRewardIcon(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-[#080A0F] border border-white/10 text-white text-xs focus:outline-none focus:border-[#F5B041]"
+              >
+                <option value="🎁">🎁 Gift</option>
+                <option value="🎮">🎮 Gaming</option>
+                <option value="🍕">🍕 Food</option>
+                <option value="🎬">🎬 Movie</option>
+                <option value="☕">☕ Coffee</option>
+                <option value="😴">😴 Nap</option>
+                <option value="🛍️">🛍️ Shopping</option>
+              </select>
             </div>
 
-            <form onSubmit={handleAddCustomReward} className="space-y-3.5">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                  Reward Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 1hr gaming, movie ticket, iced coffee..."
-                  value={newRewardName}
-                  onChange={(e) => setNewRewardName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0D14] border border-[#1E2638] text-white text-xs focus:outline-none focus:border-[#F5B041]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                    Icon
-                  </label>
-                  <select
-                    value={newRewardIcon}
-                    onChange={(e) => setNewRewardIcon(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#0A0D14] border border-[#1E2638] text-white text-xs focus:outline-none focus:border-[#F5B041]"
-                  >
-                    <option value="🎁">🎁 Gift</option>
-                    <option value="🎮">🎮 Gaming</option>
-                    <option value="🍕">🍕 Food</option>
-                    <option value="🎬">🎬 Movie</option>
-                    <option value="☕">☕ Coffee</option>
-                    <option value="😴">😴 Nap</option>
-                    <option value="🛍️">🛍️ Shopping</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                    Cost (Gold)
-                  </label>
-                  <input
-                    type="number"
-                    min={10}
-                    max={1000}
-                    value={newRewardCost}
-                    onChange={(e) => setNewRewardCost(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#0A0D14] border border-[#1E2638] text-white text-xs focus:outline-none focus:border-[#F5B041]"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#1E2638]">
-                <button
-                  type="button"
-                  onClick={() => setIsAddRewardModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl text-xs font-bold text-[#0A0D14] bg-[#F5B041] hover:bg-[#e5a031] transition"
-                >
-                  Add Loot to Shop
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                Cost (Gold)
+              </label>
+              <input
+                type="number"
+                min={10}
+                max={1000}
+                value={newRewardCost}
+                onChange={(e) => setNewRewardCost(Number(e.target.value))}
+                className="w-full px-3 py-2.5 rounded-xl bg-[#080A0F] border border-white/10 text-white text-xs font-stat focus:outline-none focus:border-[#F5B041]"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-white/[0.08]">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsAddRewardModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+            >
+              Add Loot to Shop
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* ======================================================== */}
       {/* MODAL 4: SETTINGS & COMPLIANCE BOTTOM SHEET             */}
       {/* ======================================================== */}
-      {isSettingsModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#121722] border border-[#1E2638] rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#1E2638] pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#F5B041]/10 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041]">
-                  <Settings className="w-4 h-4" />
+      <Modal
+        isOpen={isSettingsModal}
+        onClose={() => setIsSettingsModal(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-[#F5B041]/10 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041]">
+              <Settings className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-sm font-bold text-white block">System Settings</span>
+              <p className="text-[10px] text-slate-400 font-normal">Audio, notifications, and compliance</p>
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {/* Section 1: Tactile & Audio Preferences */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
+              Audio & Alerts
+            </span>
+
+            {/* Sound Effects Toggle */}
+            <div className="p-3 rounded-xl bg-[#080A0F] border border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
+                  {soundEnabled ? (
+                    <Volume2 className="w-4 h-4 text-[#F5B041]" />
+                  ) : (
+                    <VolumeX className="w-4 h-4 text-slate-500" />
+                  )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">System Settings</h3>
-                  <p className="text-[10px] text-slate-400">Audio, notifications, and compliance</p>
+                  <div className="text-xs font-bold text-slate-200">Sound Effects</div>
+                  <div className="text-[10px] text-slate-400">Audio chime on habit completion & level up</div>
                 </div>
               </div>
-              <button
-                onClick={() => setIsSettingsModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Section 1: Tactile & Audio Preferences */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                Audio & Alerts
-              </span>
-
-              {/* Sound Effects Toggle */}
-              <div className="p-3 rounded-xl bg-[#0A0D14] border border-[#1E2638] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#121722] border border-[#1E2638] flex items-center justify-center text-slate-300">
-                    {soundEnabled ? (
-                      <Volume2 className="w-4 h-4 text-[#F5B041]" />
-                    ) : (
-                      <VolumeX className="w-4 h-4 text-slate-500" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-200">Sound Effects</div>
-                    <div className="text-[10px] text-slate-400">Audio chime on habit completion & level up</div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleToggleSound}
-                  className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
-                    soundEnabled ? 'bg-[#F5B041]' : 'bg-[#1E2638]'
-                  }`}
-                >
-                  <span
-                    className={`w-5 h-5 rounded-full bg-[#0A0D14] shadow-sm transform transition-transform ${
-                      soundEnabled ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* 9:00 PM Streak Protection Reminder Toggle */}
-              <div className="p-3 rounded-xl bg-[#0A0D14] border border-[#1E2638] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#121722] border border-[#1E2638] flex items-center justify-center text-slate-300">
-                    {reminderEnabled ? (
-                      <Bell className="w-4 h-4 text-[#3B82F6]" />
-                    ) : (
-                      <BellOff className="w-4 h-4 text-slate-500" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-200">9:00 PM Streak Alert</div>
-                    <div className="text-[10px] text-slate-400">Daily reminder if quests remain incomplete</div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleToggleReminder}
-                  className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
-                    reminderEnabled ? 'bg-[#3B82F6]' : 'bg-[#1E2638]'
-                  }`}
-                >
-                  <span
-                    className={`w-5 h-5 rounded-full bg-[#0A0D14] shadow-sm transform transition-transform ${
-                      reminderEnabled ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-
-            {/* Section 2: Legal & Support (Play Store Compliance) */}
-            <div className="space-y-2 pt-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                Legal & Support
-              </span>
-
-              {/* Privacy Policy */}
-              <a
-                href={PRIVACY_POLICY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => triggerHaptic('light')}
-                className="p-3 rounded-xl bg-[#0A0D14] hover:bg-[#161D2B] border border-[#1E2638] flex items-center justify-between transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#121722] border border-[#1E2638] flex items-center justify-center text-slate-300">
-                    <FileText className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-200 group-hover:text-white">Privacy Policy</div>
-                    <div className="text-[10px] text-slate-400">Data usage, encryption, and player privacy</div>
-                  </div>
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300" />
-              </a>
-
-              {/* Terms of Service */}
-              <a
-                href={TERMS_OF_SERVICE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => triggerHaptic('light')}
-                className="p-3 rounded-xl bg-[#0A0D14] hover:bg-[#161D2B] border border-[#1E2638] flex items-center justify-between transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#121722] border border-[#1E2638] flex items-center justify-center text-slate-300">
-                    <FileText className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-200 group-hover:text-white">Terms of Service</div>
-                    <div className="text-[10px] text-slate-400">Rules of engagement & terms of use</div>
-                  </div>
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300" />
-              </a>
-
-              {/* Beta Feedback */}
-              <a
-                href={FEEDBACK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => triggerHaptic('light')}
-                className="p-3 rounded-xl bg-[#0A0D14] hover:bg-[#161D2B] border border-[#1E2638] hover:border-[#F5B041]/40 flex items-center justify-between transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#F5B041]/10 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041] text-sm">
-                    💡
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-200 group-hover:text-white">Give Beta Feedback</div>
-                    <div className="text-[10px] text-slate-400">Share suggestions or report bugs</div>
-                  </div>
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#F5B041]" />
-              </a>
-
-              {/* Developer Support Email */}
-              <a
-                href={`mailto:${SUPPORT_EMAIL}`}
-                onClick={() => triggerHaptic('light')}
-                className="p-3 rounded-xl bg-[#0A0D14] hover:bg-[#161D2B] border border-[#1E2638] flex items-center justify-between transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#121722] border border-[#1E2638] flex items-center justify-center text-slate-300">
-                    <Mail className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-200 group-hover:text-white">Support & Feedback</div>
-                    <div className="text-[10px] text-slate-400">{SUPPORT_EMAIL}</div>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-slate-300" />
-              </a>
-            </div>
-
-            {/* Version & Build */}
-            <div className="text-center py-1">
-              <span className="text-[10px] text-slate-500">
-                LEVEL UP v{APP_VERSION} (Build {BUILD_NUMBER}) • Production RPG System
-              </span>
-            </div>
-
-            {/* Section 3: Account Actions (Log Out & Mandatory Delete Account) */}
-            <div className="pt-2 border-t border-[#1E2638] space-y-2">
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="w-full py-2.5 rounded-xl bg-[#0A0D14] hover:bg-[#1E2638] border border-[#1E2638] text-xs font-semibold text-slate-300 hover:text-white transition flex items-center justify-center gap-2"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Sign Out of Account</span>
-              </button>
 
               <button
                 type="button"
-                onClick={() => {
-                  triggerHaptic('warning');
-                  setIsDeleteAccountModal(true);
-                }}
-                className="w-full py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-xs font-semibold text-red-400 hover:text-red-300 transition flex items-center justify-center gap-2"
+                onClick={handleToggleSound}
+                className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
+                  soundEnabled ? 'bg-[#F5B041]' : 'bg-white/10'
+                }`}
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete Account & Purge Data</span>
+                <span
+                  className={`w-5 h-5 rounded-full bg-[#080A0F] shadow-sm transform transition-transform ${
+                    soundEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* 9:00 PM Streak Protection Reminder Toggle */}
+            <div className="p-3 rounded-xl bg-[#080A0F] border border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
+                  {reminderEnabled ? (
+                    <Bell className="w-4 h-4 text-[#3B82F6]" />
+                  ) : (
+                    <BellOff className="w-4 h-4 text-slate-500" />
+                  )}
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-200">9:00 PM Streak Alert</div>
+                  <div className="text-[10px] text-slate-400">Daily reminder if quests remain incomplete</div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleToggleReminder}
+                className={`w-11 h-6 rounded-full transition-colors relative flex items-center p-0.5 ${
+                  reminderEnabled ? 'bg-[#3B82F6]' : 'bg-white/10'
+                }`}
+              >
+                <span
+                  className={`w-5 h-5 rounded-full bg-[#080A0F] shadow-sm transform transition-transform ${
+                    reminderEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
               </button>
             </div>
           </div>
+
+          {/* Section 2: Legal & Support (Play Store Compliance) */}
+          <div className="space-y-2 pt-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">
+              Legal & Support
+            </span>
+
+            {/* Privacy Policy */}
+            <a
+              href={PRIVACY_POLICY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => triggerHaptic('light')}
+              className="p-3 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 flex items-center justify-between transition group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
+                  <FileText className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-200 group-hover:text-white">Privacy Policy</div>
+                  <div className="text-[10px] text-slate-400">Data usage, encryption, and player privacy</div>
+                </div>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300" />
+            </a>
+
+            {/* Terms of Service */}
+            <a
+              href={TERMS_OF_SERVICE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => triggerHaptic('light')}
+              className="p-3 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 flex items-center justify-between transition group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
+                  <FileText className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-200 group-hover:text-white">Terms of Service</div>
+                  <div className="text-[10px] text-slate-400">Rules of engagement & terms of use</div>
+                </div>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-300" />
+            </a>
+
+            {/* Beta Feedback */}
+            <a
+              href={FEEDBACK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => triggerHaptic('light')}
+              className="p-3 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 hover:border-[#F5B041]/40 flex items-center justify-between transition group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#F5B041]/10 border border-[#F5B041]/30 flex items-center justify-center text-[#F5B041] text-sm">
+                  💡
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-200 group-hover:text-white">Give Beta Feedback</div>
+                  <div className="text-[10px] text-slate-400">Share suggestions or report bugs</div>
+                </div>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#F5B041]" />
+            </a>
+
+            {/* Developer Support Email */}
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              onClick={() => triggerHaptic('light')}
+              className="p-3 rounded-xl bg-[#080A0F] hover:bg-[#151A26] border border-white/10 flex items-center justify-between transition group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#151A26] border border-white/10 flex items-center justify-center text-slate-300">
+                  <Mail className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-200 group-hover:text-white">Support & Feedback</div>
+                  <div className="text-[10px] text-slate-400">{SUPPORT_EMAIL}</div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-slate-300" />
+            </a>
+          </div>
+
+          {/* Version & Build */}
+          <div className="text-center py-1">
+            <span className="text-[10px] text-slate-500 font-stat">
+              LEVEL UP v{APP_VERSION} (Build {BUILD_NUMBER}) • Production RPG System
+            </span>
+          </div>
+
+          {/* Section 3: Account Actions (Log Out & Mandatory Delete Account) */}
+          <div className="pt-2 border-t border-white/[0.08] space-y-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              icon={<LogOut className="w-3.5 h-3.5" />}
+              onClick={handleSignOut}
+              className="w-full"
+            >
+              Sign Out of Account
+            </Button>
+
+            <Button
+              type="button"
+              variant="danger"
+              size="md"
+              icon={<Trash2 className="w-3.5 h-3.5" />}
+              onClick={() => {
+                triggerHaptic('warning');
+                setIsDeleteAccountModal(true);
+              }}
+              className="w-full"
+            >
+              Delete Account & Purge Data
+            </Button>
+          </div>
         </div>
-      )}
+      </Modal>
 
       {/* ======================================================== */}
       {/* MODAL 5: MANDATORY ACCOUNT DELETION CONFIRMATION         */}
       {/* ======================================================== */}
-      {isDeleteAccountModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#121722] border border-red-500/40 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
-              <AlertCircle className="w-7 h-7" />
-            </div>
+      <Modal
+        isOpen={isDeleteAccountModal}
+        onClose={() => !isDeletingAccount && setIsDeleteAccountModal(false)}
+        maxWidth="sm"
+        title={
+          <div className="flex items-center gap-2 text-rose-400">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <span>Delete Hunter Account?</span>
+          </div>
+        }
+      >
+        <div className="space-y-4 text-center">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+            <AlertCircle className="w-7 h-7" />
+          </div>
 
-            <div className="space-y-1">
-              <h3 className="text-base font-black text-white">Delete Hunter Account?</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                This action is <strong className="text-red-400">permanent and irreversible</strong>. Your operative profile, level, earned XP, streak counters, quest log, and custom shop rewards will be permanently wiped from Cloud Firestore and Firebase Auth.
-              </p>
-            </div>
+          <div className="space-y-1.5 text-left">
+            <p className="text-xs text-slate-300 leading-relaxed">
+              This action is <strong className="text-rose-400">permanent and irreversible</strong>. Your operative profile, level, earned XP, streak counters, quest log, and custom shop rewards will be permanently wiped from Cloud Firestore and Firebase Auth.
+            </p>
+          </div>
 
-            <div className="pt-2 space-y-2">
-              <button
-                type="button"
-                disabled={isDeletingAccount}
-                onClick={handleDeleteAccountAndData}
-                className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-wider transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-red-600/30"
-              >
-                {isDeletingAccount ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4" />
-                    <span>Permanently Purge All Data</span>
-                  </>
-                )}
-              </button>
+          <div className="pt-2 space-y-2">
+            <Button
+              type="button"
+              variant="danger"
+              size="lg"
+              loading={isDeletingAccount}
+              onClick={handleDeleteAccountAndData}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-wider"
+              icon={<Trash2 className="w-4 h-4" />}
+            >
+              Permanently Purge All Data
+            </Button>
 
-              <button
-                type="button"
-                disabled={isDeletingAccount}
-                onClick={() => setIsDeleteAccountModal(false)}
-                className="w-full py-2.5 rounded-xl bg-[#0A0D14] hover:bg-[#1E2638] text-slate-300 text-xs font-bold transition"
-              >
-                Cancel & Return
-              </button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              disabled={isDeletingAccount}
+              onClick={() => setIsDeleteAccountModal(false)}
+              className="w-full"
+            >
+              Cancel & Return
+            </Button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

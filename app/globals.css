@@ -1,24 +1,101 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0A0D14;
-  --foreground: #f8fafc;
+  /* Apple/Tactile Dark Luxury Palette */
+  --bg-app: #080A0F;
+  --surface-base: #0E121B;
+  --surface-elevated: #151A26;
+  --surface-interactive: #1C2333;
+  --surface-overlay: rgba(14, 18, 27, 0.88);
+
+  /* Tactical Low-Contrast Borders */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-muted: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(245, 176, 65, 0.35);
+
+  /* Typography / Text Colors */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-accent: #F5B041;
+
+  /* Game Stats & Accent Palette */
+  --accent-gold: #F5B041;
+  --accent-gold-glow: rgba(245, 176, 65, 0.2);
+  --accent-blue: #38BDF8;
+  --accent-blue-glow: rgba(56, 189, 248, 0.2);
+  --accent-orange: #FB923C;
+  --accent-purple: #A855F7;
+  --accent-emerald: #34D399;
+  --accent-rose: #FB7185;
+
+  /* Status Colors */
+  --status-success: #34D399;
+  --status-warning: #FBBF24;
+  --status-danger: #F87171;
+  --status-info: #38BDF8;
+
+  --background: var(--bg-app);
+  --foreground: var(--text-primary);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg-app: var(--bg-app);
+  --color-surface-base: var(--surface-base);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-interactive: var(--surface-interactive);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-muted: var(--border-muted);
+  --color-border-accent: var(--border-accent);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-emerald: var(--accent-emerald);
+  --color-accent-rose: var(--accent-rose);
+  --color-accent-purple: var(--accent-purple);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: #0A0D14;
-  color: #f8fafc;
+  background: var(--bg-app);
+  color: var(--text-primary);
   font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   overscroll-behavior-y: none;
+}
+
+/* Numeric & Stat Typography (Tabular Figures) */
+.font-stat {
+  font-family: var(--font-mono), monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* Safe Area Insets for Mobile / Android WebView */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
+}
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 16px), 16px);
+}
+.mb-safe {
+  margin-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
+}
+
+/* Tactical HUD Panels */
+.hud-panel {
+  background: var(--surface-base);
+  border: 1px solid var(--border-subtle);
+}
+
+.hud-panel-elevated {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-muted);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
 }
 
 /* Custom Game Micro-animations */
@@ -43,10 +120,10 @@ body {
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(234, 179, 8, 0.35), inset 0 0 10px rgba(234, 179, 8, 0.2);
+    box-shadow: 0 0 15px rgba(245, 176, 65, 0.25), inset 0 0 10px rgba(245, 176, 65, 0.15);
   }
   50% {
-    box-shadow: 0 0 28px rgba(234, 179, 8, 0.65), inset 0 0 18px rgba(234, 179, 8, 0.4);
+    box-shadow: 0 0 28px rgba(245, 176, 65, 0.5), inset 0 0 16px rgba(245, 176, 65, 0.3);
   }
 }
 
@@ -94,7 +171,17 @@ body {
   animation: rayRotate 20s linear infinite;
 }
 
-/* Custom Scrollbar for mobile/web */
+/* Reduced Motion Support (A11y) */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Sleek Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -103,9 +190,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }

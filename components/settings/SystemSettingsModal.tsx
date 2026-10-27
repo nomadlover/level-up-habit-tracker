@@ -299,7 +299,7 @@ export const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({
               description="Report issues or suggest enhancements"
               icon={<Eye className="w-4 h-4 text-[#F5B041]" />}
               href={feedbackUrl}
-              isExternal
+              isExternal={Boolean(feedbackUrl && !feedbackUrl.startsWith('mailto:'))}
             />
 
             <SettingsRow

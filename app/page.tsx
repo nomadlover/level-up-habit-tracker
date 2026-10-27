@@ -548,58 +548,9 @@ export default function LevelUpApp() {
           await setDoc(userDocRef, newDoc, { merge: true });
           setCurrentScreen('main');
         } else {
-          // Auto-heal: Generate a default username from Firebase Auth displayName or uid
-          const firebaseUser = auth.currentUser;
-          const autoName = firebaseUser?.displayName
-            ? firebaseUser.displayName.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 15) || ('Hunter_' + userId.slice(0, 4))
-            : ('Hunter_' + userId.slice(0, 4));
-
-          const autoDoc: UserProfile = {
-            uid: userId,
-            username: autoName,
-            username_lowercase: autoName.toLowerCase(),
-            avatar_id: 'warrior',
-            level: 1,
-            xp: 0,
-            total_xp: 0,
-            daily_xp: 0,
-            daily_xp_date: todayKey,
-            gold: 0,
-            streak_days: 0,
-            last_completed_date: null,
-            is_pro: false,
-            interested_in_pro: false,
-            created_at: new Date().toISOString()
-          };
-
-          try {
-            await setDoc(userDocRef, autoDoc, { merge: true });
-          } catch (autoHealErr) {
-            console.warn('Auto-heal Firestore write failed:', autoHealErr);
-          }
-
-          const autoPlayer: PlayerStats = {
-            id: userId,
-            name: autoName,
-            avatar: getAvatarIcon('warrior'),
-            classTitle: getPlayerTitle(1, 'Warrior'),
-            level: 1,
-            currentXP: 0,
-            totalXP: 0,
-            dailyXP: 0,
-            dailyXPDate: todayKey,
-            gold: 0,
-            streakDays: 0,
-            lastCompletedDate: null,
-            isPro: false,
-            interestedInPro: false,
-            unlockedBadgeIds: ['first_blood']
-          };
-
-          setPlayer(autoPlayer);
-          localStorage.setItem('levelup_profile', JSON.stringify(autoPlayer));
-          localStorage.setItem('levelup_player', JSON.stringify(autoPlayer));
-          setCurrentScreen('main');
+          // User authenticated but users/{uid} does not exist in Firestore and no local profile exists -> route to Character Setup!
+          console.log('[LEVELUP:STATE] User authenticated but profile missing -> routing to character_setup');
+          setCurrentScreen('character_setup');
           return;
         }
       }
@@ -675,7 +626,12 @@ export default function LevelUpApp() {
       }
 
     } catch (err: any) {
-      console.warn('User auth sync exception (safe fallback):', err);
+      console.error('[LEVELUP:PROFILE] User auth sync exception:', err);
+      if (err?.code === 'permission-denied') {
+        showToast('Firestore access denied. Verify authentication status.');
+      } else if (err?.code === 'unavailable') {
+        showToast('Offline mode: Using cached hunter data.');
+      }
       const raw = localStorage.getItem('levelup_profile') || localStorage.getItem('levelup_player');
       if (raw) {
         try {
@@ -686,11 +642,15 @@ export default function LevelUpApp() {
           }
         } catch {}
       }
-      setCurrentScreen('character_setup');
+      if (auth.currentUser) {
+        setCurrentScreen('character_setup');
+      } else {
+        setCurrentScreen('auth');
+      }
     }
   }, []);
 
-  const verifyUserProfile = syncUserDataOnAuth;
+  // verifyUserProfile = syncUserDataOnAuth (handled by onAuthStateChanged)
 
   // ----------------------------------------------------
   // Real-time Habit (Quest) Sync via Firestore Subcollection
@@ -1019,34 +979,19 @@ export default function LevelUpApp() {
 
     try {
       if (isSignUpMode) {
+        console.log('[LEVELUP:AUTH] Registering user with email/password');
         const cred = await createUserWithEmailAndPassword(auth, authEmail.trim(), authPassword);
         if (cred.user) {
-          setCurrentUser(cred.user);
-          setCurrentUserId(cred.user.uid);
           showToast('Account awakened! Choose your Hunter identity.');
-          setCurrentScreen('character_setup');
+          // onAuthStateChanged handles authoritative session transition
         }
       } else {
-        const cred = await signInWithEmailAndPassword(auth, authEmail.trim(), authPassword);
-        if (cred.user) {
-          const uid = cred.user.uid;
-          setCurrentUser(cred.user);
-          setCurrentUserId(uid);
-
-          const raw = localStorage.getItem('levelup_profile') || localStorage.getItem('levelup_player');
-          let hasProfile = false;
-          if (raw) {
-            try {
-              const parsed = JSON.parse(raw);
-              if (parsed?.name && parsed.name.trim().length >= 3) hasProfile = true;
-            } catch {}
-          }
-          setCurrentScreen(hasProfile ? 'main' : 'character_setup');
-          verifyUserProfile(uid).catch(() => {});
-        }
+        console.log('[LEVELUP:AUTH] Signing in with email/password');
+        await signInWithEmailAndPassword(auth, authEmail.trim(), authPassword);
+        // onAuthStateChanged handles authoritative session transition
       }
     } catch (err: any) {
-      console.error('Firebase Auth error:', err);
+      console.error('[LEVELUP:AUTH] Firebase Auth error:', err);
       let errorMsg = err.message || 'Authentication failed. Please verify credentials.';
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
         errorMsg = 'Invalid email or password.';
@@ -1054,6 +999,10 @@ export default function LevelUpApp() {
         errorMsg = 'This email is already in use. Please sign in instead.';
       } else if (err.code === 'auth/weak-password') {
         errorMsg = 'Password must be at least 6 characters.';
+      } else if (err.code === 'auth/user-not-found') {
+        errorMsg = 'No Hunter found with this email. Please awaken a new account.';
+      } else if (err.code === 'auth/network-request-failed') {
+        errorMsg = 'Network connection failed. Please verify connectivity.';
       }
       setAuthError(errorMsg);
     } finally {
@@ -1066,57 +1015,43 @@ export default function LevelUpApp() {
     setAuthLoading(true);
     try {
       if (isNativePlatform()) {
-        // Native Android Container: Trigger native Google account picker dialog & Credential Manager
-        const result = await FirebaseAuthentication.signInWithGoogle();
+        console.log('[LEVELUP:GOOGLE_NATIVE] Triggering native Google account picker');
+        const result = await FirebaseAuthentication.signInWithGoogle({
+          serverClientId: '303219866607-0saenhf1rg8satlipfe371lq22jkstv9.apps.googleusercontent.com'
+        } as any);
+
+        console.log('[LEVELUP:GOOGLE_TOKEN]', {
+          hasResult: Boolean(result),
+          hasCredential: Boolean(result?.credential),
+          hasIdToken: Boolean(result?.credential?.idToken)
+        });
+
         const idToken = result.credential?.idToken;
-
-        if (idToken) {
-          // Authenticate with Firebase by passing that token into signInWithCredential
-          const credential = GoogleAuthProvider.credential(idToken);
-          const userCred = await signInWithCredential(auth, credential);
-          if (userCred.user) {
-            const uid = userCred.user.uid;
-            setCurrentUser(userCred.user);
-            setCurrentUserId(uid);
-
-            const raw = localStorage.getItem('levelup_profile') || localStorage.getItem('levelup_player');
-            let hasProfile = false;
-            if (raw) {
-              try {
-                const parsed = JSON.parse(raw);
-                if (parsed?.name && parsed.name.trim().length >= 3) hasProfile = true;
-              } catch {}
-            }
-            setCurrentScreen(hasProfile ? 'main' : 'character_setup');
-            verifyUserProfile(uid).catch(() => {});
-          }
-        } else if (result.user?.uid) {
-          const uid = result.user.uid;
-          setCurrentUserId(uid);
-          const raw = localStorage.getItem('levelup_profile') || localStorage.getItem('levelup_player');
-          let hasProfile = false;
-          if (raw) {
-            try {
-              const parsed = JSON.parse(raw);
-              if (parsed?.name && parsed.name.trim().length >= 3) hasProfile = true;
-            } catch {}
-          }
-          setCurrentScreen(hasProfile ? 'main' : 'character_setup');
-          verifyUserProfile(uid).catch(() => {});
-        } else {
-          throw new Error('No ID token returned from native Google Sign-In.');
+        if (!idToken) {
+          throw new Error('Google sign-in completed, but the secure authentication token could not be established. Please try again.');
         }
+
+        // Bridge native credential into the WebView Web Firebase Auth session
+        const credential = GoogleAuthProvider.credential(idToken);
+        const userCred = await signInWithCredential(auth, credential);
+
+        console.log('[LEVELUP:WEB_AUTH]', {
+          uid: userCred.user?.uid,
+          email: userCred.user?.email
+        });
+        // Authoritative onAuthStateChanged listener handles state transition
       } else {
         // Clean Web Browser Fallback: standard web popup
+        console.log('[LEVELUP:WEB_AUTH] Triggering web popup sign-in');
         const result = await signInWithPopup(auth, googleProvider);
-        if (result.user) {
-          setCurrentUser(result.user);
-          setCurrentUserId(result.user.uid);
-          await verifyUserProfile(result.user.uid);
-        }
+        console.log('[LEVELUP:WEB_AUTH]', {
+          uid: result.user?.uid,
+          email: result.user?.email
+        });
+        // Authoritative onAuthStateChanged listener handles state transition
       }
     } catch (err: any) {
-      console.error('Google Sign-In error:', err);
+      console.error('[LEVELUP:AUTH] Google Sign-In error:', err);
       if (
         err.message?.includes('cancel') ||
         err.message?.includes('12501') ||
@@ -1125,7 +1060,7 @@ export default function LevelUpApp() {
       ) {
         return;
       }
-      setAuthError(err.message || 'Google Sign-In failed.');
+      setAuthError(err.message || 'Google sign-in completed, but the secure authentication token could not be established. Please try again.');
     } finally {
       setAuthLoading(false);
     }
@@ -1159,7 +1094,15 @@ export default function LevelUpApp() {
 
     try {
       const lowerName = cleanName.toLowerCase();
-      const targetUserId = currentUserId || auth.currentUser?.uid || `user_${Date.now()}`;
+      // Ensure Web Firebase Auth is authenticated before Firestore write
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser) {
+        setSetupError('Authentication session not found. Please sign in again.');
+        setSetupLoading(false);
+        setCurrentScreen('auth');
+        return;
+      }
+      const targetUserId = firebaseUser.uid;
 
       // Check unique username_lowercase in Firestore
       const usersCol = collection(db, 'users');
@@ -1223,31 +1166,8 @@ export default function LevelUpApp() {
       showToast(`System Awakened! Welcome Hunter ${cleanName}.`);
       setCurrentScreen('main');
     } catch (err: any) {
-      console.error('Character awaken error:', err);
-      // Fallback for offline or local preview
-      const selectedClass = AVATAR_OPTIONS[selectedAvatarIdx] || AVATAR_OPTIONS[0];
-      const targetUserId = currentUserId || `user_${Date.now()}`;
-      const fallbackPlayer: PlayerStats = {
-        id: targetUserId,
-        name: cleanName,
-        avatar: selectedClass.icon,
-        classTitle: getPlayerTitle(1, selectedClass.title),
-        level: 1,
-        currentXP: 0,
-        totalXP: 0,
-        dailyXP: 0,
-        dailyXPDate: todayKey,
-        gold: 0,
-        streakDays: 0,
-        lastCompletedDate: null,
-        isPro: false,
-        interestedInPro: false,
-        unlockedBadgeIds: ['first_blood']
-      };
-      setPlayer(fallbackPlayer);
-      localStorage.setItem('levelup_profile', JSON.stringify(fallbackPlayer));
-      localStorage.setItem('levelup_player', JSON.stringify(fallbackPlayer));
-      setCurrentScreen('main');
+      console.error('[LEVELUP:PROFILE] Character awaken error:', err);
+      setSetupError(err?.message || 'Failed to initialize Hunter profile. Please try again.');
     } finally {
       setSetupLoading(false);
     }
@@ -1255,6 +1175,11 @@ export default function LevelUpApp() {
 
   const handleSignOut = async () => {
     try {
+      if (isNativePlatform()) {
+        try {
+          await FirebaseAuthentication.signOut();
+        } catch {}
+      }
       await signOut(auth);
     } catch {}
     localStorage.removeItem('levelup_profile');

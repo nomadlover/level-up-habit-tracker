@@ -4,4 +4,5 @@
     <string name="title_activity_main">LEVEL UP</string>
     <string name="package_name">com.levelup.rpgapp</string>
     <string name="custom_url_scheme">com.levelup.rpgapp</string>
+    <string name="default_web_client_id">303219866607-0saenhf1rg8satlipfe371lq22jkstv9.apps.googleusercontent.com</string>
 </resources>

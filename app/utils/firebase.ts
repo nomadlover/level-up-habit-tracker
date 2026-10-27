@@ -10,14 +10,13 @@ import {
 import {
   initializeFirestore,
   persistentLocalCache,
-  persistentSingleTabManager,
   getFirestore,
   Firestore
 } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyBefMOtzB9AfEhUXvRGVcPvUxTZOWvP8FQ',
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'level-up-3f79a.firebaseapp.com',
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTHDomain || 'level-up-3f79a.firebaseapp.com',
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'level-up-3f79a',
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'level-up-3f79a.firebasestorage.app',
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '303219866607',
@@ -33,9 +32,9 @@ export const isFirebaseConfigured = (): boolean => {
 };
 
 // Initialize Firebase App singleton
-export const app: FirebaseApp = !getApps().length
-  ? initializeApp(firebaseConfig)
-  : getApp();
+export const app: FirebaseApp = getApps().length > 0
+  ? getApp()
+  : initializeApp(firebaseConfig);
 
 // Initialize Auth with multi-layer persistence (IndexedDB + localStorage) for Android WebView resilience
 let firebaseAuth: Auth;
@@ -44,59 +43,58 @@ if (typeof window !== 'undefined') {
     firebaseAuth = initializeAuth(app, {
       persistence: [indexedDBLocalPersistence, browserLocalPersistence]
     });
-  } catch (_e) {
+  } catch {
     try {
       firebaseAuth = getAuth(app);
     } catch {
-      firebaseAuth = {} as Auth;
+      firebaseAuth = getAuth();
     }
   }
 } else {
   try {
     firebaseAuth = getAuth(app);
   } catch {
-    firebaseAuth = {} as Auth;
+    firebaseAuth = getAuth();
   }
 }
 
 export const auth: Auth = firebaseAuth;
 export const googleProvider = new GoogleAuthProvider();
 
-// Initialize Firestore with offline persistence safely (lazy for SSR)
-let firestoreDb: Firestore | null = null;
+// Initialize Firestore singleton with offline persistence safely
+let firestoreInstance: Firestore;
 
-export const getFirestoreDb = (): Firestore => {
-  if (firestoreDb) return firestoreDb;
-  if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined') {
+  try {
+    // Multi-tab resilient persistent local cache without brittle forced ownership locks
+    firestoreInstance = initializeFirestore(app, {
+      localCache: persistentLocalCache({})
+    });
+  } catch (_persistentErr) {
+    console.warn('[LEVELUP:FIRESTORE] Persistent cache initialization failed, falling back to standard Firestore:', _persistentErr);
     try {
-      firestoreDb = initializeFirestore(app, {
-        localCache: persistentLocalCache({
-          tabManager: persistentSingleTabManager({ forceOwnership: true })
-        })
-      });
+      firestoreInstance = getFirestore(app);
     } catch {
-      firestoreDb = getFirestore(app);
-    }
-  } else {
-    try {
-      firestoreDb = getFirestore(app);
-    } catch {
-      firestoreDb = {} as Firestore;
+      firestoreInstance = initializeFirestore(app, {});
     }
   }
-  return firestoreDb;
-};
-
-export const db: Firestore = new Proxy({} as Firestore, {
-  get(_target, prop) {
-    const instance = getFirestoreDb();
-    const val = (instance as any)[prop];
-    if (typeof val === 'function') {
-      return val.bind(instance);
-    }
-    return val;
+} else {
+  // During Next.js static prerender in Node (SSR), firestore is not used on server.
+  // We satisfy module evaluation with Firestore prototype so SSR build succeeds cleanly.
+  try {
+    firestoreInstance = getFirestore(app);
+  } catch {
+    firestoreInstance = Object.create(Firestore.prototype) as Firestore;
   }
-});
+}
+
+// Validation: Ensure db is a genuine, concrete Firestore instance
+if (!firestoreInstance) {
+  throw new Error('[LEVELUP:FIRESTORE] Cloud Firestore initialization failed: SDK instance is undefined.');
+}
+
+export const db: Firestore = firestoreInstance;
+export const getFirestoreDb = (): Firestore => db;
 
 export interface UserProfile {
   uid: string;

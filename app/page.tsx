@@ -46,7 +46,6 @@ import {
   Button,
   Card,
   Badge,
-  ProgressBar,
   Modal,
   EmptyState,
   QuestCard,
@@ -58,7 +57,11 @@ import {
   LeaderboardRow,
   LeaderboardPodium,
   GoldBalance,
-  RewardCard
+  RewardCard,
+  HunterIdentity,
+  ProgressionCard,
+  StatGrid,
+  AchievementBadge
 } from '@/components/ui';
 import {
   PRIVACY_POLICY_URL,
@@ -198,14 +201,6 @@ const getAvatarIcon = (avatarId?: string): string => {
 };
 
 const EMOJI_BANK = ['⚡', '💧', '🏃', '📚', '🧘', '🥗', '💻', '💤', '✍️', '🏋️', '🎯', '🥑', '🔥', '🛡️', '🧠', '☕'];
-
-const BADGES_LIST: Badge[] = [
-  { id: 'first_blood', name: 'First Blood', description: 'Complete your first habit quest', icon: '🩸', reqText: '1 quest completed' },
-  { id: 'streak_7', name: 'Unbroken Flame', description: 'Maintain a 7-day streak on any habit', icon: '🔥', reqText: '7-day streak' },
-  { id: 'guild_hero', name: 'Guild Champion', description: 'Reach Level 5 and lead your squad', icon: '🛡️', reqText: 'Reach Level 5' },
-  { id: 'gold_hoarder', name: 'Dragon Treasury', description: 'Accumulate over 300 Gold in your vault', icon: '💰', reqText: '300 Gold saved' },
-  { id: 'century_slayer', name: 'Century Vanguard', description: 'Complete 25 total quests across your journey', icon: '⚡', reqText: '25 quests done' }
-];
 
 // 1-Tap Student Starter Quests (Play Store empty state)
 const STARTER_QUESTS: { name: string; icon: string; difficulty: Difficulty; xpReward: number; goldReward: number }[] = [
@@ -349,6 +344,7 @@ export default function LevelUpApp() {
   // Particles
   const [particles, setParticles] = useState<FloatingParticle[]>([]);
   const particleIdRef = useRef(0);
+  const avatarCustomizerRef = useRef<HTMLDivElement>(null);
 
   // New Quest Form
   const [newQuestName, setNewQuestName] = useState('');
@@ -414,6 +410,84 @@ export default function LevelUpApp() {
   }, [habits.length, completedTodayCount]);
 
   const xpNeeded = useMemo(() => xpForLevel(player.level), [player.level]);
+
+  // Client-Side Derived Milestones (Strictly computed from actual player metrics - no fake databases)
+  const hunterMilestones = useMemo(() => {
+    return [
+      {
+        id: 'first_blood',
+        title: 'First Blood',
+        description: 'Complete your first daily habit quest',
+        icon: '⚔️',
+        reqText: '1 quest completed',
+        isUnlocked: totalCompletedCount >= 1,
+        progress: { current: Math.min(totalCompletedCount, 1), max: 1 }
+      },
+      {
+        id: 'novice_hunter',
+        title: 'Novice Hunter',
+        description: 'Advance to Level 5 and earn D-Rank status',
+        icon: '🛡️',
+        reqText: 'Reach Level 5',
+        isUnlocked: player.level >= 5,
+        progress: { current: Math.min(player.level, 5), max: 5 }
+      },
+      {
+        id: 'disciplined_streak',
+        title: 'Unbroken Flame',
+        description: 'Maintain a consecutive 7-day discipline streak',
+        icon: '🔥',
+        reqText: '7-day streak',
+        isUnlocked: player.streakDays >= 7,
+        progress: { current: Math.min(player.streakDays, 7), max: 7 }
+      },
+      {
+        id: 'adept_hunter',
+        title: 'Adept Hunter',
+        description: 'Reach Level 10 and ascend to C-Rank classification',
+        icon: '👑',
+        reqText: 'Reach Level 10',
+        isUnlocked: player.level >= 10,
+        progress: { current: Math.min(player.level, 10), max: 10 }
+      },
+      {
+        id: 'treasury_hoarder',
+        title: 'Dragon Treasury',
+        description: 'Accumulate 500 or more Gold in your Armory vault',
+        icon: '💰',
+        reqText: '500 Gold saved',
+        isUnlocked: player.gold >= 500,
+        progress: { current: Math.min(player.gold, 500), max: 500 }
+      },
+      {
+        id: 'xp_vanguard',
+        title: 'XP Vanguard',
+        description: 'Earn 1,000 total career experience points',
+        icon: '⚡',
+        reqText: '1,000 total XP',
+        isUnlocked: player.totalXP >= 1000,
+        progress: { current: Math.min(player.totalXP, 1000), max: 1000 }
+      },
+      {
+        id: 'iron_will',
+        title: 'Iron Will',
+        description: 'Demonstrate elite dedication with a 30-day streak',
+        icon: '✨',
+        reqText: '30-day streak',
+        isUnlocked: player.streakDays >= 30,
+        progress: { current: Math.min(player.streakDays, 30), max: 30 }
+      },
+      {
+        id: 'elite_hunter',
+        title: 'Elite Hunter',
+        description: 'Achieve Level 20 and enter A-Rank dominion',
+        icon: '🏆',
+        reqText: 'Reach Level 20',
+        isUnlocked: player.level >= 20,
+        progress: { current: Math.min(player.level, 20), max: 20 }
+      }
+    ];
+  }, [totalCompletedCount, player.level, player.streakDays, player.gold, player.totalXP]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -2810,9 +2884,14 @@ export default function LevelUpApp() {
             <div className="space-y-3.5">
               {/* Profile Screen Header with Settings Gear Button */}
               <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  Hunter Dossier
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Hunter Dossier
+                  </span>
+                  <span className="text-[10px] font-stat font-semibold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[#F5B041]">
+                    OPERATIVE RECORD
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -2827,117 +2906,144 @@ export default function LevelUpApp() {
                 </button>
               </div>
 
-              {/* Profile Card */}
-              <Card variant="base" padding="md" className="text-center shadow-sm">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-[#080A0F] border-2 border-[#F5B041] flex items-center justify-center text-3xl shadow-md mb-2">
-                  {player.avatar}
-                </div>
-                <h2 className="text-base font-black text-white break-words">{player.name}</h2>
-                <div className="text-xs text-[#F5B041] font-bold mt-0.5 font-stat">
-                  Level {player.level} • {player.classTitle}
+              {/* 1. Hunter Identity Header */}
+              <HunterIdentity
+                name={player.name}
+                avatar={player.avatar}
+                classTitle={player.classTitle}
+                level={player.level}
+                isPro={player.isPro}
+                onEditAvatar={() => {
+                  triggerHaptic('light');
+                  avatarCustomizerRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              />
+
+              {/* 2. Experience & Level Advancement */}
+              <ProgressionCard
+                level={player.level}
+                currentXP={player.currentXP}
+                requiredXP={xpNeeded}
+                totalXP={player.totalXP}
+              />
+
+              {/* 3. Core Combat & Discipline Stats Grid */}
+              <StatGrid
+                level={player.level}
+                totalXP={player.totalXP}
+                streakDays={player.streakDays}
+                gold={player.gold}
+                completedQuestsCount={totalCompletedCount}
+                userRank={userRank}
+              />
+
+              {/* 4. Hunter Milestones (Client-Side Derived Achievements) */}
+              <Card variant="base" padding="md" className="shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-[#F5B041]/10 border border-[#F5B041]/20 flex items-center justify-center text-[#F5B041]">
+                      <Award className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                        Hunter Milestones
+                      </h3>
+                      <p className="text-[10px] text-slate-400 font-stat">
+                        Battle honors & discipline achievements
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-stat font-bold px-2 py-0.5 rounded-md bg-[#080A0F] border border-white/10 text-[#F5B041]">
+                    {hunterMilestones.filter((m) => m.isUnlocked).length} / {hunterMilestones.length}
+                  </span>
                 </div>
 
-                {/* Level / XP Progress Bar */}
-                <div className="mt-3.5 px-1">
-                  <ProgressBar
-                    value={player.currentXP}
-                    max={xpNeeded}
-                    color="gold"
-                    height="md"
-                    label={`XP: ${player.currentXP.toLocaleString()} / ${xpNeeded.toLocaleString()}`}
-                    showPercent
-                  />
-                </div>
-
-                {/* Avatar Chooser */}
-                <div className="mt-4 flex items-center justify-center gap-1.5">
-                  {AVATAR_OPTIONS.map((av) => (
-                    <button
-                      key={av.title}
-                      type="button"
-                      onClick={() => {
-                        setPlayer((prev) => ({
-                          ...prev,
-                          avatar: av.icon,
-                          classTitle: getPlayerTitle(prev.level, av.title)
-                        }));
-                        if (currentUserId && currentUserId !== 'user_init') {
-                          setDoc(doc(db, 'users', currentUserId), { avatar_id: av.icon }, { merge: true }).catch(() => {});
-                        }
-                        triggerHaptic('light');
-                        playCoinSound(!soundEnabled);
-                        showToast(`Avatar updated: ${av.icon}`);
-                      }}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm border transition ${
-                        player.avatar === av.icon
-                          ? 'bg-[#F5B041]/20 border-[#F5B041] scale-105'
-                          : 'bg-[#080A0F] border-white/10 text-slate-400'
-                      }`}
-                    >
-                      {av.icon}
-                    </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {hunterMilestones.map((m) => (
+                    <AchievementBadge
+                      key={m.id}
+                      id={m.id}
+                      title={m.title}
+                      description={m.description}
+                      icon={m.icon}
+                      isUnlocked={m.isUnlocked}
+                      reqText={m.reqText}
+                      progress={m.progress}
+                    />
                   ))}
                 </div>
               </Card>
 
-              {/* 3 Clean Summary Stat Cards */}
-              <div className="grid grid-cols-3 gap-2">
-                <Card variant="base" padding="sm" className="text-center shadow-sm">
-                  <div className="text-base mb-1">🔥</div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Streak</div>
-                  <div className="text-sm font-black font-stat text-[#F5B041] mt-0.5">{player.streakDays}d</div>
-                </Card>
+              {/* 5. Operative Archetype & Avatar Customizer */}
+              <div ref={avatarCustomizerRef}>
+                <Card variant="base" padding="md" className="space-y-3 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-[#F5B041]/10 border border-[#F5B041]/20 flex items-center justify-center text-[#F5B041]">
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                          Operative Archetype & Icon
+                        </h3>
+                        <p className="text-[10px] text-slate-400">
+                          Select your tactical RPG specialization
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-                <Card variant="base" padding="sm" className="text-center shadow-sm">
-                  <div className="text-base mb-1">⚡</div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quests</div>
-                  <div className="text-sm font-black font-stat text-[#3B82F6] mt-0.5">{totalCompletedCount}</div>
-                </Card>
-
-                <Card variant="base" padding="sm" className="text-center shadow-sm">
-                  <div className="text-base mb-1">🏆</div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rank</div>
-                  <div className="text-sm font-black font-stat text-amber-300 mt-0.5">#{userRank ?? 1}</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {AVATAR_OPTIONS.map((av) => {
+                      const isSelected = player.avatar === av.icon;
+                      return (
+                        <button
+                          key={av.title}
+                          type="button"
+                          onClick={() => {
+                            setPlayer((prev) => ({
+                              ...prev,
+                              avatar: av.icon,
+                              classTitle: getPlayerTitle(prev.level, av.title)
+                            }));
+                            if (currentUserId && currentUserId !== 'user_init') {
+                              setDoc(doc(db, 'users', currentUserId), { avatar_id: av.icon }, { merge: true }).catch(() => {});
+                            }
+                            triggerHaptic('light');
+                            playCoinSound(!soundEnabled);
+                            showToast(`Operative class updated: ${av.title}`);
+                          }}
+                          className={`p-2.5 rounded-xl border text-left flex items-start gap-2.5 transition active:scale-95 ${
+                            isSelected
+                              ? 'bg-[#151A26] border-[#F5B041] shadow-[0_0_12px_rgba(245,176,65,0.15)] ring-1 ring-[#F5B041]/50'
+                              : 'bg-[#080A0F] border-white/[0.08] hover:border-white/20 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <div className="text-2xl shrink-0 mt-0.5">{av.icon}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                                {av.title}
+                              </span>
+                              {isSelected && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#F5B041] shadow-[0_0_6px_#F5B041]" />
+                              )}
+                            </div>
+                            <div className="text-[10px] text-[#F5B041] font-stat font-medium truncate mt-0.5">
+                              {av.role}
+                            </div>
+                            <div className="text-[9px] text-slate-500 line-clamp-1 mt-0.5">
+                              {av.desc}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </Card>
               </div>
 
-              {/* Unlocked Badges Grid */}
-              <Card variant="base" padding="md" className="shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
-                    <Award className="w-4 h-4 text-[#F5B041]" />
-                    <span>Unlocked Badges ({(player.unlockedBadgeIds || []).length}/{BADGES_LIST.length})</span>
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {BADGES_LIST.map((b) => {
-                    const isUnlocked = (player.unlockedBadgeIds || []).includes(b.id);
-                    return (
-                      <div
-                        key={b.id}
-                        className={`p-2.5 rounded-xl border flex items-start gap-2.5 transition ${
-                          isUnlocked
-                            ? 'bg-[#080A0F] border-[#F5B041]/40'
-                            : 'bg-[#080A0F]/40 border-white/[0.06] opacity-50'
-                        }`}
-                      >
-                        <div className="text-xl shrink-0 mt-0.5">{b.icon}</div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-xs font-bold text-slate-100 leading-snug break-words">
-                            {b.name}
-                          </h4>
-                          <p className="text-[11px] text-slate-400 leading-tight break-words mt-0.5">
-                            {b.reqText}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-
-              {/* Level Up Pro (₹49/mo) Teaser Card (100% Free V1 Launch Ready) */}
+              {/* 6. Level Up Pro (₹49/mo) Teaser Card (Preserved) */}
               <Card variant="accent" padding="md" className="space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -2984,7 +3090,7 @@ export default function LevelUpApp() {
                 </Button>
               </Card>
 
-              {/* Sign Out Action */}
+              {/* 7. Sign Out Action (Preserved) */}
               <div className="pt-1">
                 <Button
                   variant="danger"
